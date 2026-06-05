@@ -44,6 +44,18 @@ CREATE TABLE IF NOT EXISTS gallery (
   caption TEXT DEFAULT '',
   position SERIAL
 );
+CREATE TABLE IF NOT EXISTS jobdata (
+  id TEXT PRIMARY KEY,
+  doc JSONB NOT NULL,
+  updated_at BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS jobposts (
+  id TEXT PRIMARY KEY,
+  doc JSONB NOT NULL,
+  published BOOLEAN NOT NULL DEFAULT true,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS posts (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -231,6 +243,51 @@ async function addGalleryItem(item) {
 async function deleteGalleryItem(id) { return (await pool.query('DELETE FROM gallery WHERE id=$1', [id])).rowCount > 0; }
 async function reorderGallery(ids) { return reorderItems('gallery', ids); }
 
+/* ---------- jobdata (tuyển dụng) ---------- */
+async function getJobData() {
+  const r = await pool.query("SELECT doc FROM jobdata WHERE id='current'");
+  return r.rows[0] ? r.rows[0].doc : null;
+}
+async function setJobData(doc) {
+  await pool.query(
+    "INSERT INTO jobdata (id, doc, updated_at) VALUES ('current', $1, $2) ON CONFLICT (id) DO UPDATE SET doc=EXCLUDED.doc, updated_at=EXCLUDED.updated_at",
+    [doc, Date.now()]
+  );
+  return true;
+}
+
+/* ---------- jobposts (tin tuyển dụng) ---------- */
+const JP_FIELDS = ['title', 'brand', 'position', 'salary', 'location', 'quantity', 'deadline', 'workingTime', 'description', 'requirements', 'benefits', 'image', 'published'];
+function mapJobPost(r) { return Object.assign({ id: r.id, createdAt: Number(r.created_at), updatedAt: Number(r.updated_at) }, r.doc, { id: r.id, published: r.published }); }
+async function listJobPosts(opts) {
+  opts = opts || {};
+  const q = opts.publishedOnly
+    ? 'SELECT * FROM jobposts WHERE published=true ORDER BY created_at DESC'
+    : 'SELECT * FROM jobposts ORDER BY created_at DESC';
+  return (await pool.query(q)).rows.map(mapJobPost);
+}
+async function getJobPost(id) {
+  const r = (await pool.query('SELECT * FROM jobposts WHERE id=$1', [id])).rows[0];
+  return r ? mapJobPost(r) : null;
+}
+async function createJobPost(d) {
+  const id = genId('jp'); const now = Date.now();
+  const doc = {}; JP_FIELDS.forEach(k => { doc[k] = d[k] !== undefined ? d[k] : (k === 'published' ? true : ''); });
+  const published = doc.published !== false; delete doc.published;
+  await pool.query('INSERT INTO jobposts (id, doc, published, created_at, updated_at) VALUES ($1,$2,$3,$4,$4)', [id, doc, published, now]);
+  return getJobPost(id);
+}
+async function updateJobPost(id, fields) {
+  const cur = (await pool.query('SELECT * FROM jobposts WHERE id=$1', [id])).rows[0];
+  if (!cur) return null;
+  const doc = Object.assign({}, cur.doc);
+  let published = cur.published;
+  JP_FIELDS.forEach(k => { if (fields[k] !== undefined) { if (k === 'published') published = fields[k] !== false; else doc[k] = fields[k]; } });
+  await pool.query('UPDATE jobposts SET doc=$2, published=$3, updated_at=$4 WHERE id=$1', [id, doc, published, Date.now()]);
+  return getJobPost(id);
+}
+async function deleteJobPost(id) { return (await pool.query('DELETE FROM jobposts WHERE id=$1', [id])).rowCount > 0; }
+
 /* ---------- posts ---------- */
 function mapPost(r) { return { id: r.id, title: r.title, body: r.body, image: r.image || '', published: r.published, createdAt: Number(r.created_at), updatedAt: Number(r.updated_at) }; }
 async function listPosts(opts) {
@@ -268,5 +325,7 @@ module.exports = {
   getAgentByUsername, createAgent, updatePassword, deleteAgent, listAgents, countAgents,
   getCarousel, addCarouselItem, deleteCarouselItem, reorderCarousel,
   getGallery, addGalleryItem, deleteGalleryItem, reorderGallery,
+  getJobData, setJobData,
+  listJobPosts, getJobPost, createJobPost, updateJobPost, deleteJobPost,
   listPosts, createPost, updatePost, deletePost
 };

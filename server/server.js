@@ -14,6 +14,11 @@ let store = require('./lib/store');
 const presets = require('./lib/presets');
 const gemini = require('./lib/gemini');
 const auth = require('./lib/auth');
+const recruit = require('./lib/jobdata');
+const geocode = require('./lib/geocode');
+
+let jobData = null;                 // dữ liệu tuyển dụng (nạp lúc khởi động / sau khi upload)
+const recruitStates = new Map();    // cid -> trạng thái luồng tuyển dụng
 
 const PORT = process.env.PORT || 8787;
 const SITE_ROOT = path.join(__dirname, '..');
@@ -152,6 +157,95 @@ app.put('/api/gallery/order', authREST, async (req, res) => {
   res.json({ ok });
 });
 
+/* ---- dữ liệu tuyển dụng (Job List) ---- */
+function jobSummary(d) {
+  if (!d) return { hasData: false };
+  return {
+    hasData: true, updatedAt: d.updatedAt || 0,
+    storeCount: d.storeCount || (d.stores ? d.stores.length : 0),
+    openCount: d.openCount || 0, geocodedCount: d.geocodedCount || 0,
+    brands: d.brands || {}, positions: (recruit.POS_ORDER || []).filter(p => d.jobs && d.jobs[p])
+      .map(p => ({ code: p, name: recruit.POS_NAME[p] }))
+  };
+}
+app.get('/api/jobdata/summary', authREST, async (req, res) => { res.json(jobSummary(jobData)); });
+app.get('/api/jobdata/full', authREST, async (req, res) => {
+  if (!jobData) return res.json({ hasData: false });
+  res.json({ hasData: true, summary: jobSummary(jobData), stores: jobData.stores, jobs: jobData.jobs });
+});
+
+/* geocode nền cho các địa chỉ mới chưa có toạ độ (không chặn request) */
+async function geocodeMissing() {
+  try {
+    if (!jobData) return;
+    const todo = jobData.stores.filter(s => s.address && !s.coord).slice(0, 60);
+    if (!todo.length) return;
+    let changed = false;
+    for (const s of todo) {
+      const c = await geocode.geocode(s.address);
+      if (c) { s.coord = c; changed = true; }
+    }
+    if (changed) {
+      jobData.geocodedCount = jobData.stores.filter(s => s.coord).length;
+      try { await store.setJobData(jobData); } catch (e) {}
+      console.log('[jobdata] geocode nền xong, có toạ độ: ' + jobData.geocodedCount);
+    }
+  } catch (e) { console.error('[geocodeMissing]', e.message); }
+}
+
+/* Lưu dữ liệu đã chỉnh sửa trực tiếp từ dashboard */
+app.put('/api/jobdata', authREST, requireAdmin, async (req, res) => {
+  try {
+    const stores = (req.body && req.body.stores) || [];
+    if (!Array.isArray(stores) || !stores.length) return res.status(400).json({ error: 'Thiếu dữ liệu cửa hàng' });
+    const jobs = (req.body && req.body.jobs) || (jobData && jobData.jobs) || {};
+    const doc = recruit.buildDoc(stores, jobs);
+    await store.setJobData(doc);
+    jobData = doc;
+    res.json({ ok: true, summary: jobSummary(doc) });
+    geocodeMissing(); // chạy nền sau khi đã trả lời
+  } catch (e) { console.error('[jobdata:put]', e); res.status(500).json({ error: 'Lỗi lưu: ' + e.message }); }
+});
+app.post('/api/jobdata/upload', authREST, requireAdmin, async (req, res) => {
+  try {
+    const dataUrl = (req.body && req.body.dataUrl) || '';
+    const m = /^data:[^;]*;base64,(.+)$/.exec(dataUrl);
+    if (!m) return res.status(400).json({ error: 'File không hợp lệ' });
+    const buf = Buffer.from(m[1], 'base64');
+    const parsed = await recruit.parse(buf);
+    if (!parsed.stores.length) return res.status(400).json({ error: 'Không đọc được cửa hàng nào trong file.' });
+    await store.setJobData(parsed);
+    jobData = parsed;
+    res.json({ ok: true, summary: jobSummary(parsed) });
+    geocodeMissing(); // bù toạ độ cho địa chỉ mới (chạy nền)
+  } catch (e) {
+    console.error('[jobdata]', e);
+    res.status(500).json({ error: 'Lỗi đọc file: ' + e.message });
+  }
+});
+
+/* ---- jobposts (tin tuyển dụng) ---- */
+app.get('/api/jobposts', async (req, res) => { res.json({ posts: await store.listJobPosts({ publishedOnly: true }) }); });
+app.get('/api/jobposts/all', authREST, async (req, res) => { res.json({ posts: await store.listJobPosts({}) }); });
+app.get('/api/jobposts/:id', async (req, res) => {
+  const p = await store.getJobPost(req.params.id);
+  if (!p || !p.published) return res.status(404).json({ error: 'Không tìm thấy tin' });
+  res.json(p);
+});
+app.post('/api/jobposts', authREST, requireAdmin, async (req, res) => {
+  const title = String((req.body && req.body.title) || '').trim();
+  if (!title) return res.status(400).json({ error: 'Thiếu tiêu đề' });
+  res.json(await store.createJobPost(req.body || {}));
+});
+app.put('/api/jobposts/:id', authREST, requireAdmin, async (req, res) => {
+  const p = await store.updateJobPost(req.params.id, req.body || {});
+  res.status(p ? 200 : 404).json(p || { error: 'Không tìm thấy' });
+});
+app.delete('/api/jobposts/:id', authREST, requireAdmin, async (req, res) => {
+  const ok = await store.deleteJobPost(req.params.id);
+  res.status(ok ? 200 : 404).json({ ok });
+});
+
 /* ---- posts ---- */
 app.get('/api/posts', async (req, res) => { res.json({ posts: await store.listPosts({ publishedOnly: true }) }); });
 app.get('/api/posts/all', authREST, async (req, res) => { res.json({ posts: await store.listPosts({}) }); });
@@ -183,6 +277,67 @@ async function pushConvToAgents(cid) { broadcastAgents({ type: 'update', conv: a
 function broadcastPresence() { broadcastAgents({ type: 'presence', agents: [...agents].map(w => w.agentName) }); }
 const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
+function isRecruitIntent(text) {
+  const n = ' ' + presets.norm(text) + ' ';
+  return /(tuyen dung|tuyen nhan vien|tuyen khong|con tuyen|viec lam|ung tuyen|tim viec|xin viec|di lam|part time|parttime|full time|fulltime|nop cv|tuyen)/.test(n);
+}
+function isExitIntent(text) {
+  const n = ' ' + presets.norm(text) + ' ';
+  return /(gap nhan vien|nguoi that|tu van vien|cam on|tam biet|khong can|thoi khong)/.test(n);
+}
+
+/* Luồng tuyển dụng nhiều bước. Trả về câu trả lời, hoặc null để nhường cho preset/Gemini. */
+async function handleRecruit(cid, text) {
+  if (!jobData || !jobData.stores || !jobData.stores.length) return null; // chưa có dữ liệu
+  let state = recruitStates.get(cid);
+
+  if (state && isExitIntent(text)) { recruitStates.delete(cid); return null; }
+
+  // bắt đầu luồng
+  if (!state) {
+    if (!isRecruitIntent(text)) return null;
+    recruitStates.set(cid, { step: 'ask_address' });
+    return 'Dạ Thịnh Thế Vinh Hoa (MAYCHA, Hồng Trà Sữa Tâm Hảo, Gà Giòn Ba Cô Gái) đang tuyển nhiều vị trí ạ! 🎉\n'
+      + 'Bạn cho mình xin **tên đường / khu vực bạn đang ở** để mình tìm cửa hàng đang tuyển gần bạn nhất nhé!\n'
+      + '(vd: "Cao Thắng" hoặc "123 Lê Văn Sỹ, Quận 3") 📍';
+  }
+
+  if (state.step === 'ask_address') {
+    const res = await recruit.findStores(jobData, text, 10);
+    if (!res.meaningful || !res.stores.length) {
+      return 'Mình chưa định vị được khu vực của bạn 😅. Bạn gõ rõ **tên đường + thành phố** giúp mình nhé '
+        + '(vd: "Cao Thắng, TP.HCM" hoặc "Lê Văn Sỹ, Quận 3").';
+    }
+    const positions = recruit.positionsOf(res.stores);
+    const region = recruit.isHCMregion(text) || (res.stores[0] && recruit.isHCMregion(res.stores[0].address)) ? 'hcm' : 'tinh';
+    recruitStates.set(cid, { step: 'ask_position', positions, region });
+    const posList = positions.map((p, i) => `${i + 1}. ${recruit.POS_NAME[p]}`).join('\n');
+    return '📋 Các cửa hàng đang tuyển gần bạn (gần → xa):\n\n'
+      + recruit.formatStoreList(res.stores)
+      + '\n\n──────────\nBạn muốn ứng tuyển **vị trí nào** ạ?\n' + posList
+      + '\n\n(Gõ tên hoặc số thứ tự vị trí giúp mình nhé 😊)';
+  }
+
+  if (state.step === 'ask_position') {
+    let pos = null;
+    const num = text.trim().match(/^\s*(\d+)\s*[.)]?\s*$/);
+    if (num) { const i = +num[1] - 1; if (state.positions[i]) pos = state.positions[i]; }
+    if (!pos) pos = recruit.detectPosition(text);
+    if (!pos || !(jobData.jobs && jobData.jobs[pos])) {
+      return 'Bạn vui lòng chọn giúp mình một trong các vị trí sau ạ:\n'
+        + state.positions.map((p, i) => `${i + 1}. ${recruit.POS_NAME[p]}`).join('\n');
+    }
+    const detail = recruit.formatJobDetail(jobData, pos, state.region);
+    const note = state.positions.indexOf(pos) === -1
+      ? '\n\n⚠️ (Vị trí này các cửa hàng gần bạn hiện chưa tuyển, nhưng đây là thông tin để bạn tham khảo nhé.)' : '';
+    recruitStates.delete(cid);
+    return detail + note
+      + '\n\n──────────\n💌 Muốn ứng tuyển? Để lại **SĐT/Zalo** hoặc gửi CV về email tuyển dụng, '
+      + 'hoặc nhắn "gặp nhân viên" để được hỗ trợ trực tiếp.\nGõ "tuyển dụng" nếu bạn muốn xem khu vực/vị trí khác nhé! 😊';
+  }
+  return null;
+}
+
 async function runBot(cid) {
   let conv = await store.getConv(cid);
   if (conv.mode !== 'auto') return;                       // (3) có nhân viên -> bot im
@@ -193,15 +348,19 @@ async function runBot(cid) {
 
   let answer;
   try {
-    const preset = presets.match(text);                    // (1)
-    if (preset) { await delay(500 + Math.random() * 400); answer = preset; }
-    else {                                                  // (2)
-      const g = await gemini.ask(conv.messages);
-      answer = (g === null)
-        ? 'Câu này mình chưa có sẵn câu trả lời 🤔 Bạn nhắn Zalo để được hỗ trợ trực tiếp nhé. (Máy chủ chưa cấu hình GEMINI_API_KEY.)'
-        : g;
+    answer = await handleRecruit(cid, text);               // (0) luồng tuyển dụng có ngữ cảnh
+    if (answer != null) { await delay(400 + Math.random() * 300); }
+    else {
+      const preset = presets.match(text);                  // (1)
+      if (preset) { await delay(500 + Math.random() * 400); answer = preset; }
+      else {                                                // (2)
+        const g = await gemini.ask(conv.messages);
+        answer = (g === null)
+          ? 'Câu này mình chưa có sẵn câu trả lời 🤔 Bạn nhắn Zalo để được hỗ trợ trực tiếp nhé. (Máy chủ chưa cấu hình GEMINI_API_KEY.)'
+          : g;
+      }
     }
-  } catch (err) { answer = 'Xin lỗi, trợ lý AI đang bận 🙏 Bạn vui lòng nhắn Zalo giúp mình nhé.'; console.error('[gemini]', err.message); }
+  } catch (err) { answer = 'Xin lỗi, trợ lý AI đang bận 🙏 Bạn vui lòng nhắn Zalo giúp mình nhé.'; console.error('[bot]', err.message); }
 
   conv = await store.getConv(cid);
   if (conv.mode !== 'auto') { sendCustomer(cid, { type: 'typing', who: 'bot', on: false }); return; }
@@ -301,11 +460,13 @@ async function start() {
     const ex = await store.getAgentByUsername(du);
     if (ex && ex.role !== 'admin') { await store.createAgent(du, ex.passwordHash, ex.name, 'admin'); console.log('  • Đã nâng quyền admin cho: ' + du); }
   }
+  try { jobData = await store.getJobData(); } catch (e) { jobData = null; }
   server.listen(PORT, () => {
     console.log('Thịnh Thế Vinh Hoa chat backend — http://localhost:' + PORT);
     console.log('  • Trang khách:    http://localhost:' + PORT + '/');
     console.log('  • Bảng nhân viên:  http://localhost:' + PORT + '/agent.html');
     console.log('  • Store: ' + (info.backend) + ' | Gemini: ' + (gemini.hasKey() ? 'ON (' + gemini.MODEL + ')' : 'OFF'));
+    console.log('  • Tuyển dụng: ' + (jobData ? (jobData.storeCount + ' cửa hàng, ' + jobData.openCount + ' đang tuyển') : 'chưa có dữ liệu (upload trong dashboard)'));
   });
 }
 start().catch(e => { console.error('Không khởi động được:', e); process.exit(1); });

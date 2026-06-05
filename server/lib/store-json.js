@@ -15,6 +15,8 @@ function loadSync() {
   data.posts = data.posts || [];
   data.carousel = data.carousel || [];
   data.gallery = data.gallery || [];
+  data.jobdata = data.jobdata || null;
+  data.jobposts = data.jobposts || [];
 }
 
 let timer = null;
@@ -119,6 +121,32 @@ async function addGalleryItem(item) { const it = { id: genId('gl'), src: item.sr
 async function deleteGalleryItem(id) { const n = data.gallery.length; data.gallery = data.gallery.filter(x => x.id !== id); persist(); return data.gallery.length < n; }
 async function reorderGallery(ids) { data.gallery = reorderArr(data.gallery, ids); persist(); return true; }
 
+/* ---------- jobdata (tuyển dụng) ---------- */
+async function getJobData() { return data.jobdata || null; }
+async function setJobData(doc) { data.jobdata = doc; persist(); return true; }
+
+/* ---------- jobposts (tin tuyển dụng) ---------- */
+const JP_FIELDS = ['title', 'brand', 'position', 'salary', 'location', 'quantity', 'deadline', 'workingTime', 'description', 'requirements', 'benefits', 'image', 'published'];
+async function listJobPosts(opts) {
+  opts = opts || {};
+  let arr = data.jobposts.slice().sort((a, b) => b.createdAt - a.createdAt);
+  if (opts.publishedOnly) arr = arr.filter(p => p.published);
+  return arr.map(p => Object.assign({}, p));
+}
+async function getJobPost(id) { const p = data.jobposts.find(x => x.id === id); return p ? Object.assign({}, p) : null; }
+async function createJobPost(d) {
+  const p = { id: genId('jp'), createdAt: Date.now(), updatedAt: Date.now() };
+  JP_FIELDS.forEach(k => { p[k] = d[k] !== undefined ? d[k] : (k === 'published' ? true : ''); });
+  p.published = p.published !== false;
+  data.jobposts.push(p); persist(); return p;
+}
+async function updateJobPost(id, fields) {
+  const p = data.jobposts.find(x => x.id === id); if (!p) return null;
+  JP_FIELDS.forEach(k => { if (fields[k] !== undefined) p[k] = fields[k]; });
+  p.updatedAt = Date.now(); persist(); return Object.assign({}, p);
+}
+async function deleteJobPost(id) { const n = data.jobposts.length; data.jobposts = data.jobposts.filter(x => x.id !== id); persist(); return data.jobposts.length < n; }
+
 /* ---------- posts ---------- */
 async function listPosts(opts) {
   opts = opts || {};
@@ -142,5 +170,7 @@ module.exports = {
   getAgentByUsername, createAgent, updatePassword, deleteAgent, listAgents, countAgents,
   getCarousel, addCarouselItem, deleteCarouselItem, reorderCarousel,
   getGallery, addGalleryItem, deleteGalleryItem, reorderGallery,
+  getJobData, setJobData,
+  listJobPosts, getJobPost, createJobPost, updateJobPost, deleteJobPost,
   listPosts, createPost, updatePost, deletePost
 };

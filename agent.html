@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     tailwind.config = { theme: { extend: {
       colors: { cream:'#FBF7F0', sand:'#F3EADb', paper:'#FFFFFF', ink:'#1B1714', 'ink-soft':'#6A5F54', gold:'#C19A2B', 'gold-deep':'#937218', crimson:'#A8131C', 'crimson-deep':'#7C0E15' },
@@ -53,6 +54,8 @@
         <button data-go="posts" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📝</span> Bài đăng</button>
         <button data-go="carousel" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🖼️</span> Carousel</button>
         <button data-go="gallery" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📸</span> Khoảnh khắc</button>
+        <button data-go="jobposts" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📢</span> Tin tuyển dụng</button>
+        <button data-go="jobs" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🤖</span> Data chatbot TD</button>
         <button data-go="staff" id="nav-staff" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">👥</span> Nhân viên</button>
         <button data-go="account" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">⚙️</span> Tài khoản</button>
       </nav>
@@ -173,6 +176,124 @@
           <p id="gl-empty" class="text-ink-soft">Chưa có ảnh nào.</p>
         </section>
 
+        <!-- JOBPOSTS (Tin tuyển dụng) -->
+        <section data-panel="jobposts" class="h-full hidden overflow-y-auto p-6">
+          <p class="text-sm text-ink-soft mb-4">Các tin tuyển dụng hiển thị tại trang công khai <a href="tuyendung.html" target="_blank" class="text-crimson underline">/tuyendung.html</a>. Click một tin trên trang đó sẽ mở trang chi tiết.</p>
+          <div class="grid lg:grid-cols-[1fr_380px] gap-6">
+            <div>
+              <h2 class="font-display text-xl font-700 mb-3">Danh sách tin tuyển dụng</h2>
+              <div id="jp-list" class="space-y-3"></div>
+              <p id="jp-empty" class="text-ink-soft">Chưa có tin tuyển dụng nào.</p>
+            </div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5 h-fit lg:sticky lg:top-2">
+              <h3 id="jp-form-title" class="font-display text-lg font-700">Thêm tin tuyển dụng</h3>
+              <form id="jp-form" class="mt-3 space-y-3">
+                <input type="hidden" id="jp-id" />
+                <input id="jp-title" placeholder="Tiêu đề vị trí *" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
+                <div class="grid grid-cols-2 gap-2">
+                  <select id="jp-brand" class="rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm">
+                    <option value="TTVH">Thịnh Thế Vinh Hoa</option>
+                    <option value="MC">MAYCHA</option>
+                    <option value="TH">Hồng Trà Sữa Tâm Hảo</option>
+                    <option value="GA">Gà Giòn Sốt Ba Cô Gái</option>
+                  </select>
+                  <input id="jp-position" placeholder="Hình thức (Full/Part-time)" class="rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <input id="jp-salary" placeholder="Mức lương" class="rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" />
+                  <input id="jp-quantity" placeholder="Số lượng" class="rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" />
+                </div>
+                <input id="jp-location" placeholder="Khu vực làm việc (vd: Quận 10, TP.HCM)" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson text-sm" />
+                <div class="grid grid-cols-2 gap-2">
+                  <input id="jp-workingTime" placeholder="Thời gian làm việc" class="rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" />
+                  <input id="jp-deadline" placeholder="Hạn nộp (vd: 30/06/2026)" class="rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" />
+                </div>
+                <textarea id="jp-description" rows="4" placeholder="Mô tả công việc…" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson resize-y text-sm"></textarea>
+                <textarea id="jp-requirements" rows="3" placeholder="Yêu cầu ứng viên…" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson resize-y text-sm"></textarea>
+                <textarea id="jp-benefits" rows="3" placeholder="Quyền lợi…" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson resize-y text-sm"></textarea>
+                <label class="flex items-center gap-2 text-sm"><input id="jp-published" type="checkbox" checked /> Hiển thị công khai</label>
+                <div class="flex gap-2">
+                  <button class="rounded-full bg-crimson text-cream px-5 py-2.5 text-sm font-600 hover:bg-crimson-deep">Lưu tin</button>
+                  <button type="button" id="jp-reset" class="rounded-full bg-ink/10 px-4 py-2.5 text-sm font-600 hover:bg-ink/20">Làm mới</button>
+                </div>
+                <p id="jp-msg" class="text-sm"></p>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- JOBS (Tuyển dụng) -->
+        <section data-panel="jobs" class="h-full hidden overflow-y-auto p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <h2 class="font-display text-xl font-700">Dữ liệu tuyển dụng (Job List)</h2>
+            <label class="ml-auto inline-flex items-center gap-2 rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 cursor-pointer hover:bg-crimson-deep">
+              ⬆ Tải file Excel lên <input id="job-file" type="file" accept=".xlsx,.xls" class="hidden" />
+            </label>
+          </div>
+          <p class="text-sm text-ink-soft mb-4">Chatbot dùng dữ liệu này để gợi ý cửa hàng đang tuyển gần khách & trả lời mô tả công việc. File cần đủ 3 sheet: <b>Địa chỉ cửa hàng</b>, <b>Số lượng tuyển từng cửa hàng</b>, <b>Mô tả công việc</b>. Tải file mới sẽ <b>thay thế</b> dữ liệu cũ.</p>
+          <p id="job-msg" class="text-sm mb-4"></p>
+
+          <div id="job-empty" class="hidden rounded-2xl border-2 border-dashed border-ink/15 p-10 text-center text-ink-soft">
+            Chưa có dữ liệu tuyển dụng. Bấm <b>“Tải file Excel lên”</b> để nạp file Job List.
+          </div>
+
+          <div id="job-cards" class="hidden">
+            <!-- thẻ số liệu -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700" id="job-stores">0</div><div class="text-sm text-ink-soft">Cửa hàng</div></div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700 text-crimson" id="job-open">0</div><div class="text-sm text-ink-soft">Đang tuyển</div></div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700 text-gold-deep" id="job-need">0</div><div class="text-sm text-ink-soft">Tổng cần tuyển</div></div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700" id="job-geo">0</div><div class="text-sm text-ink-soft">Có toạ độ</div></div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700" id="job-pos">0</div><div class="text-sm text-ink-soft">Vị trí có mô tả</div></div>
+            </div>
+
+            <!-- biểu đồ -->
+            <div class="grid lg:grid-cols-2 gap-4 mb-6">
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="font-600 mb-3">Nhu cầu tuyển theo vị trí</div>
+                <div class="h-64"><canvas id="chart-pos"></canvas></div>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="font-600 mb-3">Cửa hàng theo thương hiệu</div>
+                <div class="h-64"><canvas id="chart-brand"></canvas></div>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="font-600 mb-3">Top 10 cửa hàng cần tuyển nhiều nhất</div>
+                <div class="h-64"><canvas id="chart-top"></canvas></div>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="font-600 mb-3">Tình trạng tuyển dụng</div>
+                <div class="h-64"><canvas id="chart-status"></canvas></div>
+              </div>
+            </div>
+            <div class="text-sm text-ink-soft mb-6">Cập nhật lần cuối: <span id="job-updated" class="font-600 text-ink">—</span></div>
+
+            <!-- bảng dữ liệu sửa trực tiếp -->
+            <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+              <div class="flex flex-wrap items-center gap-3 mb-3">
+                <div class="font-600">Dữ liệu cửa hàng (sửa trực tiếp)</div>
+                <input id="job-search" placeholder="🔎 Tìm mã / tên / địa chỉ…" class="ml-auto px-3 py-1.5 rounded-lg ring-1 ring-ink/15 text-sm w-56 max-w-full" />
+                <button id="job-add" class="text-sm px-3 py-1.5 rounded-lg bg-ink/10 hover:bg-ink/20">+ Thêm cửa hàng</button>
+                <button id="job-save" class="text-sm px-4 py-1.5 rounded-lg bg-crimson text-cream font-600 hover:bg-crimson-deep">💾 Cập nhật</button>
+              </div>
+              <p class="text-xs text-ink-soft mb-2">Số <b>dương</b> = còn tuyển vị trí đó. SM=Cửa hàng trưởng · SL=Trưởng ca · ASF=NV Fulltime · Staff=NV Part-time · StaffFT=Staff Fulltime · CSS=Hoạt náo. Sửa xong nhấn <b>Cập nhật</b> để lưu & vẽ lại biểu đồ.</p>
+              <div class="overflow-auto max-h-[28rem] ring-1 ring-ink/10 rounded-lg">
+                <table class="w-full text-sm border-collapse">
+                  <thead class="sticky top-0 bg-sand text-ink-soft text-xs z-10">
+                    <tr>
+                      <th class="p-2 text-left">#</th><th class="p-2 text-left">Mã</th><th class="p-2 text-left">Brand</th>
+                      <th class="p-2 text-left min-w-[10rem]">Tên</th><th class="p-2 text-left min-w-[16rem]">Địa chỉ</th>
+                      <th class="p-2">SM</th><th class="p-2">SL</th><th class="p-2">ASF</th><th class="p-2">Staff</th><th class="p-2">StaffFT</th><th class="p-2">CSS</th><th class="p-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="job-tbody"></tbody>
+                </table>
+              </div>
+              <div id="job-count" class="text-xs text-ink-soft mt-2"></div>
+            </div>
+          </div>
+        </section>
+
         <!-- STAFF -->
         <section data-panel="staff" class="h-full hidden overflow-y-auto p-6">
           <div class="grid lg:grid-cols-[1fr_340px] gap-6">
@@ -239,7 +360,7 @@
     $('logout').addEventListener('click', function () { localStorage.removeItem('ttvh_agent_jwt'); token = ''; try { ws && ws.close(); } catch (e) {} showLogin(); });
 
     /* ---------- navigation ---------- */
-    var titles = { overview: 'Tổng quan', chat: 'Hội thoại', posts: 'Bài đăng', carousel: 'Carousel', gallery: 'Khoảnh khắc', staff: 'Nhân viên', account: 'Tài khoản' };
+    var titles = { overview: 'Tổng quan', chat: 'Hội thoại', posts: 'Bài đăng', carousel: 'Carousel', gallery: 'Khoảnh khắc', jobposts: 'Tin tuyển dụng', jobs: 'Dữ liệu chatbot tuyển dụng', staff: 'Nhân viên', account: 'Tài khoản' };
     function go(name) {
       activePanel = name;
       document.querySelectorAll('[data-panel]').forEach(function (s) { s.classList.toggle('hidden', s.getAttribute('data-panel') !== name); });
@@ -249,6 +370,8 @@
       if (name === 'posts') loadPosts();
       if (name === 'carousel') loadCarousel();
       if (name === 'gallery') loadGallery();
+      if (name === 'jobs') loadJobData();
+      if (name === 'jobposts') loadJobPosts();
       if (name === 'staff') loadAgents();
       if (name === 'overview') loadOverview();
     }
@@ -381,6 +504,211 @@
         for (var i = 0; i < files.length; i++) { var url = await uploadImage(files[i]); await fetch('/api/gallery', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ src: url }) }); }
         msg.textContent = '✓ Đã thêm ảnh'; msg.className = 'text-sm text-emerald-600'; this.value = ''; loadGallery();
       } catch (e) { msg.textContent = e.message; msg.className = 'text-sm text-crimson'; }
+    });
+
+    /* ---------- jobposts (tin tuyển dụng) ---------- */
+    var JP_F = ['title', 'brand', 'position', 'salary', 'quantity', 'location', 'workingTime', 'deadline', 'description', 'requirements', 'benefits'];
+    var JP_BRAND = { TTVH: 'Thịnh Thế Vinh Hoa', MC: 'MAYCHA', TH: 'Hồng Trà Sữa Tâm Hảo', GA: 'Gà Giòn Ba Cô Gái' };
+    async function loadJobPosts() {
+      try {
+        var j = await (await fetch('/api/jobposts/all', { headers: authHeaders() })).json();
+        var arr = j.posts || [];
+        $('jp-empty').style.display = arr.length ? 'none' : 'block';
+        $('jp-list').innerHTML = arr.map(function (p) {
+          return '<div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-4 flex items-start gap-3">'
+            + '<div class="min-w-0 flex-1">'
+            + '<div class="flex items-center gap-2 flex-wrap"><span class="text-xs px-2 py-0.5 rounded-full bg-ink/5">' + esc(JP_BRAND[p.brand] || p.brand || '—') + '</span>'
+            + (p.published ? '' : '<span class="text-xs px-2 py-0.5 rounded-full bg-ink/10 text-ink-soft">Ẩn</span>') + '</div>'
+            + '<div class="font-600 mt-1 truncate">' + esc(p.title) + '</div>'
+            + '<div class="text-sm text-ink-soft mt-0.5">' + [p.salary, p.location, p.quantity ? ('SL: ' + p.quantity) : ''].filter(Boolean).map(esc).join(' · ') + '</div></div>'
+            + '<div class="flex flex-col gap-1.5 shrink-0">'
+            + '<button data-edit="' + p.id + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Sửa</button>'
+            + '<a href="tuyendung.html?id=' + encodeURIComponent(p.id) + '" target="_blank" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20 text-center">Xem</a>'
+            + '<button data-del="' + p.id + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>';
+        }).join('');
+        window._jobposts = arr;
+        document.querySelectorAll('#jp-list [data-edit]').forEach(function (b) { b.onclick = function () { jpEdit(b.getAttribute('data-edit')); }; });
+        document.querySelectorAll('#jp-list [data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Xoá tin này?')) return; await fetch('/api/jobposts/' + b.getAttribute('data-del'), { method: 'DELETE', headers: authHeaders() }); loadJobPosts(); }; });
+      } catch (e) {}
+    }
+    function jpEdit(id) {
+      var p = (window._jobposts || []).find(function (x) { return x.id === id; }); if (!p) return;
+      $('jp-id').value = p.id; $('jp-form-title').textContent = 'Sửa tin tuyển dụng';
+      JP_F.forEach(function (k) { var el = $('jp-' + k); if (el) el.value = p[k] || ''; });
+      $('jp-published').checked = p.published !== false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function jpReset() { $('jp-form').reset(); $('jp-id').value = ''; $('jp-form-title').textContent = 'Thêm tin tuyển dụng'; $('jp-published').checked = true; $('jp-msg').textContent = ''; }
+    $('jp-reset').addEventListener('click', jpReset);
+    $('jp-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var msg = $('jp-msg'); var id = $('jp-id').value;
+      var body = { published: $('jp-published').checked };
+      JP_F.forEach(function (k) { var el = $('jp-' + k); body[k] = el ? el.value.trim() : ''; });
+      if (!body.title) { msg.textContent = 'Vui lòng nhập tiêu đề'; msg.className = 'text-sm text-crimson'; return; }
+      msg.textContent = 'Đang lưu…'; msg.className = 'text-sm text-ink-soft';
+      try {
+        var url = id ? '/api/jobposts/' + id : '/api/jobposts';
+        var r = await fetch(url, { method: id ? 'PUT' : 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+        if (!r.ok) throw new Error((await r.json()).error || 'Lỗi lưu');
+        msg.textContent = '✓ Đã lưu'; msg.className = 'text-sm text-emerald-600';
+        jpReset(); loadJobPosts();
+      } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm text-crimson'; }
+    });
+
+    /* ---------- jobs (tuyển dụng) ---------- */
+    var jobStores = [];        // dữ liệu cửa hàng đang sửa
+    var jobJobs = {};          // mô tả công việc
+    var jobCharts = {};        // các Chart.js instance
+    var NEEDK = ['SM', 'SL', 'ASF', 'Staff', 'StaffFT', 'CSS'];
+    var BRAND_VN = { MC: 'MAYCHA', TH: 'Tâm Hảo', GA: 'Gà Ba Cô Gái' };
+    var POS_VN = { SM: 'Cửa hàng trưởng', SL: 'Trưởng ca', ASF: 'NV Fulltime', SE: 'NV Part-time', CSS: 'Hoạt náo (CSS)' };
+
+    async function loadJobData() {
+      try {
+        var j = await (await fetch('/api/jobdata/full', { headers: authHeaders() })).json();
+        var has = j && j.hasData;
+        $('job-empty').classList.toggle('hidden', !!has);
+        $('job-cards').classList.toggle('hidden', !has);
+        if (!has) { jobStores = []; return; }
+        jobStores = (j.stores || []).map(function (s) { return s; });
+        jobJobs = j.jobs || {};
+        renderJobStats(j.summary || {});
+        renderJobCharts();
+        renderJobTable($('job-search').value || '');
+      } catch (e) {}
+    }
+
+    function renderJobStats(s) {
+      var totalNeed = jobStores.reduce(function (a, st) { return a + (Number(st.needTotal) || 0); }, 0);
+      $('job-stores').textContent = s.storeCount || jobStores.length;
+      $('job-open').textContent = s.openCount || 0;
+      $('job-need').textContent = totalNeed;
+      $('job-geo').textContent = s.geocodedCount || 0;
+      $('job-pos').textContent = (s.positions || []).length;
+      $('job-updated').textContent = s.updatedAt ? new Date(s.updatedAt).toLocaleString('vi-VN') : '—';
+    }
+
+    function aggPositions() { // tổng cần tuyển theo vị trí (gộp về 5 nhóm chatbot)
+      var sum = { SM: 0, SL: 0, ASF: 0, SE: 0, CSS: 0 };
+      jobStores.forEach(function (s) {
+        var n = s.need || {};
+        sum.SM += Math.max(+n.SM || 0, 0); sum.SL += Math.max(+n.SL || 0, 0);
+        sum.ASF += Math.max(+n.ASF || 0, 0) + Math.max(+n.StaffFT || 0, 0);
+        sum.SE += Math.max(+n.Staff || 0, 0); sum.CSS += Math.max(+n.CSS || 0, 0);
+      });
+      return sum;
+    }
+
+    function mkChart(id, cfg) {
+      if (jobCharts[id]) { jobCharts[id].destroy(); }
+      var el = $(id); if (!el || !window.Chart) return;
+      jobCharts[id] = new Chart(el.getContext('2d'), cfg);
+    }
+
+    function renderJobCharts() {
+      var C = { crimson: '#A8131C', gold: '#C19A2B', ink: '#1B1714', teal: '#2B8A7C', blue: '#3B6FB0', soft: '#6A5F54' };
+      // 1) nhu cầu theo vị trí
+      var ap = aggPositions();
+      mkChart('chart-pos', {
+        type: 'bar',
+        data: { labels: ['Cửa hàng trưởng', 'Trưởng ca', 'NV Fulltime', 'NV Part-time', 'Hoạt náo'],
+          datasets: [{ label: 'Cần tuyển', data: [ap.SM, ap.SL, ap.ASF, ap.SE, ap.CSS], backgroundColor: [C.crimson, C.gold, C.blue, C.teal, '#B5651D'], borderRadius: 6 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+      });
+      // 2) theo thương hiệu
+      var brs = {}; jobStores.forEach(function (s) { brs[s.brand] = (brs[s.brand] || 0) + 1; });
+      mkChart('chart-brand', {
+        type: 'doughnut',
+        data: { labels: Object.keys(brs).map(function (b) { return BRAND_VN[b] || b; }),
+          datasets: [{ data: Object.values(brs), backgroundColor: [C.crimson, C.gold, C.teal, C.blue, C.soft] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+      // 3) top 10 cần tuyển nhiều nhất
+      var top = jobStores.slice().filter(function (s) { return s.needTotal > 0; }).sort(function (a, b) { return b.needTotal - a.needTotal; }).slice(0, 10);
+      mkChart('chart-top', {
+        type: 'bar',
+        data: { labels: top.map(function (s) { return (BRAND_VN[s.brand] || s.brand) + ' ' + s.name; }),
+          datasets: [{ label: 'Cần tuyển', data: top.map(function (s) { return s.needTotal; }), backgroundColor: C.crimson, borderRadius: 5 }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+      });
+      // 4) tình trạng tuyển dụng
+      var openN = jobStores.filter(function (s) { return (s.openPositions || []).length; }).length;
+      mkChart('chart-status', {
+        type: 'doughnut',
+        data: { labels: ['Đang tuyển', 'Đã đủ nhân sự'],
+          datasets: [{ data: [openN, jobStores.length - openN], backgroundColor: [C.crimson, '#D9D2C7'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+
+    function renderJobTable(filter) {
+      var f = (filter || '').toLowerCase();
+      var rows = jobStores.map(function (s, i) { s._i = i; return s; }).filter(function (s) {
+        if (!f) return true;
+        return ((s.code || '') + ' ' + (s.name || '') + ' ' + (s.address || '')).toLowerCase().indexOf(f) > -1;
+      });
+      var num = function (v) { return '<input type="number" data-i="' + v.i + '" data-k="' + v.k + '" value="' + (Number(v.val) || 0) + '" class="jcell w-14 px-1 py-1 text-center rounded ring-1 ring-ink/10" />'; };
+      var txt = function (i, k, val, cls) { return '<input data-i="' + i + '" data-k="' + k + '" value="' + esc(val || '') + '" class="jcell ' + (cls || '') + ' px-2 py-1 rounded ring-1 ring-ink/10 w-full" />'; };
+      $('job-tbody').innerHTML = rows.map(function (s) {
+        var i = s._i, n = s.need || {};
+        return '<tr class="border-b border-ink/5">'
+          + '<td class="p-1 text-ink-soft text-xs">' + (i + 1) + '</td>'
+          + '<td class="p-1">' + txt(i, 'code', s.code, 'w-20') + '</td>'
+          + '<td class="p-1">' + txt(i, 'brand', s.brand, 'w-14') + '</td>'
+          + '<td class="p-1">' + txt(i, 'name', s.name) + '</td>'
+          + '<td class="p-1">' + txt(i, 'address', s.address) + '</td>'
+          + NEEDK.map(function (k) { return '<td class="p-1 text-center">' + num({ i: i, k: k, val: n[k] }) + '</td>'; }).join('')
+          + '<td class="p-1 text-center"><button data-del="' + i + '" class="text-crimson hover:bg-crimson/10 rounded px-1.5">✕</button></td>'
+          + '</tr>';
+      }).join('');
+      $('job-count').textContent = 'Hiển thị ' + rows.length + ' / ' + jobStores.length + ' cửa hàng';
+      // gắn sự kiện sửa
+      document.querySelectorAll('#job-tbody .jcell').forEach(function (el) {
+        el.addEventListener('change', function () {
+          var i = +el.getAttribute('data-i'), k = el.getAttribute('data-k');
+          if (NEEDK.indexOf(k) > -1) { jobStores[i].need = jobStores[i].need || {}; jobStores[i].need[k] = Number(el.value) || 0; }
+          else { jobStores[i][k] = el.value; }
+        });
+      });
+      document.querySelectorAll('#job-tbody [data-del]').forEach(function (b) {
+        b.onclick = function () { var i = +b.getAttribute('data-del'); if (!confirm('Xoá cửa hàng "' + (jobStores[i].name || jobStores[i].code) + '"?')) return; jobStores.splice(i, 1); renderJobTable($('job-search').value || ''); };
+      });
+    }
+
+    $('job-search').addEventListener('input', function () { renderJobTable(this.value); });
+    $('job-add').addEventListener('click', function () {
+      jobStores.unshift({ code: '', brand: 'MC', name: '', address: '', need: { SM: 0, SL: 0, ASF: 0, Staff: 0, StaffFT: 0, CSS: 0 }, needTotal: 0, openPositions: [] });
+      $('job-search').value = ''; renderJobTable('');
+    });
+    $('job-save').addEventListener('click', async function () {
+      var msg = $('job-msg'); msg.textContent = 'Đang lưu…'; msg.className = 'text-sm text-ink-soft';
+      try {
+        var clean = jobStores.filter(function (s) { return (s.code || '').trim(); });
+        var r = await fetch('/api/jobdata', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ stores: clean, jobs: jobJobs }) });
+        var j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Lỗi lưu');
+        msg.textContent = '✓ Đã cập nhật & vẽ lại biểu đồ.'; msg.className = 'text-sm text-emerald-600';
+        loadJobData();
+      } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm text-crimson'; }
+    });
+    $('job-file').addEventListener('change', function () {
+      var f = this.files && this.files[0]; if (!f) return;
+      var input = this, msg = $('job-msg');
+      msg.textContent = 'Đang đọc & nạp file "' + f.name + '"…'; msg.className = 'text-sm text-ink-soft';
+      var rd = new FileReader();
+      rd.onload = async function () {
+        try {
+          var r = await fetch('/api/jobdata/upload', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ dataUrl: rd.result }) });
+          var j = await r.json();
+          if (!r.ok) throw new Error(j.error || 'Lỗi tải lên');
+          var s = j.summary || {};
+          msg.textContent = '✓ Đã cập nhật: ' + (s.storeCount || 0) + ' cửa hàng, ' + (s.openCount || 0) + ' đang tuyển, ' + (s.geocodedCount || 0) + ' có toạ độ.';
+          msg.className = 'text-sm text-emerald-600';
+          input.value = ''; loadJobData();
+        } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm text-crimson'; }
+      };
+      rd.readAsDataURL(f);
     });
 
     /* ---------- staff ---------- */
