@@ -354,6 +354,7 @@
         if (!r.ok) return showLogin(j.error || 'Đăng nhập thất bại');
         token = j.token; me = j.name; meRole = j.role || 'agent';
         localStorage.setItem('ttvh_agent_jwt', token);
+        $('nav-staff').style.display = meRole === 'admin' ? '' : 'none';
         startApp();
       } catch (err) { showLogin('Không kết nối được máy chủ'); }
     });
@@ -717,10 +718,15 @@
       try {
         var j = await (await fetch('/api/agents', { headers: authHeaders() })).json();
         $('agents-list').innerHTML = (j.agents || []).map(function (a) {
-          return '<div class="flex items-center gap-2 py-3 border-b border-ink/10 last:border-0"><div class="min-w-0"><div class="font-600 truncate">' + esc(a.name) + ' <span class="text-ink-soft font-400">@' + esc(a.username) + '</span>' + (a.role === 'admin' ? ' <span class="text-[10px] px-1.5 py-0.5 rounded bg-crimson/10 text-crimson">admin</span>' : '') + '</div></div>'
-            + '<div class="ml-auto flex gap-2 shrink-0"><button data-reset="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Đặt lại MK</button>'
+          return '<div class="flex items-center gap-2 py-3 border-b border-ink/10 last:border-0"><div class="min-w-0"><div class="font-600 truncate">' + esc(a.name) + ' <span class="text-ink-soft font-400">@' + esc(a.username) + '</span></div></div>'
+            + '<div class="ml-auto flex items-center gap-2 shrink-0">'
+            + '<select data-role="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-cream ring-1 ring-ink/15">'
+            + '<option value="agent"' + (a.role !== 'admin' ? ' selected' : '') + '>Nhân viên</option>'
+            + '<option value="admin"' + (a.role === 'admin' ? ' selected' : '') + '>Quản trị (admin)</option></select>'
+            + '<button data-reset="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Đặt lại MK</button>'
             + '<button data-del="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>';
         }).join('');
+        document.querySelectorAll('#agents-list [data-role]').forEach(function (s) { s.onchange = async function () { var u = s.getAttribute('data-role'); var r = await fetch('/api/agents/' + encodeURIComponent(u) + '/role', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ role: s.value }) }); var jr = await r.json(); if (r.ok) { alert('✓ Đã đổi quyền @' + u + ' thành ' + (s.value === 'admin' ? 'Quản trị' : 'Nhân viên')); } else { alert(jr.error || 'Lỗi'); loadAgents(); } }; });
         document.querySelectorAll('#agents-list [data-reset]').forEach(function (b) { b.onclick = async function () { var u = b.getAttribute('data-reset'); var p = prompt('Mật khẩu mới cho @' + u + ' (≥6):'); if (!p) return; var r = await fetch('/api/agents/' + encodeURIComponent(u) + '/reset-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ password: p }) }); alert((await r.json()).error || '✓ Đã đặt lại'); }; });
         document.querySelectorAll('#agents-list [data-del]').forEach(function (b) { b.onclick = async function () { var u = b.getAttribute('data-del'); if (!confirm('Xoá @' + u + '?')) return; var r = await fetch('/api/agents/' + encodeURIComponent(u), { method: 'DELETE', headers: authHeaders() }); if (r.ok) loadAgents(); else alert((await r.json()).error || 'Lỗi'); }; });
       } catch (e) {}

@@ -96,6 +96,17 @@ app.post('/api/agents/:username/reset-password', authREST, requireAdmin, async (
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: 'Lỗi máy chủ' }); }
 });
+app.put('/api/agents/:username/role', authREST, requireAdmin, async (req, res) => {
+  try {
+    const role = (req.body && req.body.role) === 'admin' ? 'admin' : 'agent';
+    const a = await store.getAgentByUsername(req.params.username);
+    if (!a) return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+    if (req.params.username === req.agent.sub && role !== 'admin')
+      return res.status(400).json({ error: 'Không thể tự hạ quyền chính mình' });
+    await store.createAgent(a.username, a.passwordHash, a.name, role); // upsert giữ mật khẩu & tên
+    res.json({ ok: true, username: a.username, role });
+  } catch (e) { res.status(500).json({ error: 'Lỗi máy chủ' }); }
+});
 app.delete('/api/agents/:username', authREST, requireAdmin, async (req, res) => {
   try {
     if (req.params.username === req.agent.sub) return res.status(400).json({ error: 'Không thể xoá chính mình' });
@@ -380,7 +391,10 @@ wss.on('connection', (ws) => {
       if (m.role === 'agent') {
         const payload = auth.verifyToken(m.token || '');
         if (!payload) { send(ws, { type: 'auth_error' }); return; }
-        ws.role = 'agent'; ws.agentName = payload.name || payload.sub; ws.agentUser = payload.sub; ws.perm = payload.role || 'agent';
+        ws.role = 'agent'; ws.agentName = payload.name || payload.sub; ws.agentUser = payload.sub;
+        // Lấy quyền MỚI NHẤT từ DB (tránh token cũ giữ quyền lỗi thời)
+        let dbA = null; try { dbA = await store.getAgentByUsername(payload.sub); } catch (e) {}
+        ws.perm = (dbA && dbA.role) || payload.role || 'agent';
         agents.add(ws);
         send(ws, { type: 'agent_init', me: ws.agentName, role: ws.perm, conversations: await store.listConversations() });
         broadcastPresence();
