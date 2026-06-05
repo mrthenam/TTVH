@@ -1,0 +1,11 @@
+**/node_modules
+.git
+.gitignore
+.env
+server/.env
+server/data
+images/uploads
+*.log
+*test*.js
+README*.md
+DEPLOY.md

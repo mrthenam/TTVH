@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản trị — Thịnh Thế Vinh Hoa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { cream:'#FBF7F0', sand:'#F3EADb', paper:'#FFFFFF', ink:'#1B1714', 'ink-soft':'#6A5F54', gold:'#C19A2B', 'gold-deep':'#937218', crimson:'#A8131C', 'crimson-deep':'#7C0E15' },
+      fontFamily: { display:['"Playfair Display"','serif'], sans:['"Be Vietnam Pro"','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 14px 40px -18px rgba(124,14,21,0.20)', lift:'0 26px 60px -22px rgba(124,14,21,0.30)' }
+    } } };
+  </script>
+  <style>
+    body{background:#FBF7F0}
+    ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:9px}
+    .nav-btn.active{background:#A8131C;color:#FBF7F0}
+    .nav-btn.active .nav-ico{color:#FBF7F0}
+  </style>
+</head>
+<body class="font-sans text-ink">
+
+  <!-- LOGIN -->
+  <div id="login" class="fixed inset-0 grid place-items-center bg-cream z-50 px-4">
+    <form id="login-form" class="w-full max-w-sm rounded-3xl bg-paper ring-1 ring-ink/10 shadow-lift p-7 space-y-4">
+      <div class="flex items-center gap-3">
+        <img src="images/logos/ttvh.jpg" alt="Thịnh Thế Vinh Hoa" class="h-12 w-auto rounded-xl" />
+        <div><p class="font-display text-xl font-700 leading-tight">Thịnh Thế Vinh Hoa</p><p class="text-xs tracking-widest uppercase text-ink-soft">Trang quản trị</p></div>
+      </div>
+      <input id="li-user" placeholder="Tên đăng nhập" autocomplete="username" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
+      <input id="li-pass" type="password" placeholder="Mật khẩu" autocomplete="current-password" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
+      <button class="w-full rounded-full bg-crimson text-cream py-2.5 font-600 hover:bg-crimson-deep transition-colors">Đăng nhập</button>
+      <p id="li-err" class="text-sm text-crimson hidden"></p>
+      <p class="text-xs text-ink-soft">Mặc định lần đầu: <b>admin / admin123</b> (đổi ngay sau khi vào).</p>
+    </form>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden min-h-screen grid grid-cols-[250px_1fr]">
+    <!-- SIDEBAR -->
+    <aside class="bg-crimson-deep text-cream/90 flex flex-col">
+      <div class="flex items-center gap-3 px-5 py-5 border-b border-cream/15">
+        <img src="images/logos/ttvh.jpg" alt="" class="h-11 w-auto rounded-xl bg-cream/95 p-0.5" />
+        <div class="leading-tight"><p class="font-display font-700 text-cream">Thịnh Thế Vinh Hoa</p><p class="text-[11px] tracking-widest uppercase text-cream/60">Dashboard</p></div>
+      </div>
+      <nav class="flex-1 p-3 space-y-1 text-sm">
+        <button data-go="overview" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">▦</span> Tổng quan</button>
+        <button data-go="chat" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">💬</span> Hội thoại <span id="chat-dot" class="hidden ml-auto w-2 h-2 rounded-full bg-gold"></span></button>
+        <button data-go="posts" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📝</span> Bài đăng</button>
+        <button data-go="carousel" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🖼️</span> Carousel</button>
+        <button data-go="gallery" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📸</span> Khoảnh khắc</button>
+        <button data-go="staff" id="nav-staff" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">👥</span> Nhân viên</button>
+        <button data-go="account" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">⚙️</span> Tài khoản</button>
+      </nav>
+      <div class="p-3 border-t border-cream/15 text-sm">
+        <p id="me" class="px-3 py-1 font-600"></p>
+        <button id="logout" class="w-full mt-1 px-3 py-2 rounded-xl bg-cream/10 hover:bg-cream/20 text-left">Đăng xuất</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex flex-col min-w-0 h-screen">
+      <header class="flex items-center gap-3 px-6 py-4 bg-paper border-b border-ink/10">
+        <h1 id="title" class="font-display text-2xl font-700">Tổng quan</h1>
+        <div class="ml-auto flex items-center gap-3 text-xs">
+          <span id="presence" class="text-ink-soft"></span>
+          <span id="conn" class="px-2.5 py-1 rounded-full bg-gray-200 text-gray-600">● Ngoại tuyến</span>
+        </div>
+      </header>
+      <div class="flex-1 overflow-hidden">
+
+        <!-- OVERVIEW -->
+        <section data-panel="overview" class="h-full overflow-y-auto p-6">
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5"><p class="text-sm text-ink-soft">Hội thoại</p><p id="ov-conv" class="font-display text-4xl font-700 text-crimson">0</p></div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5"><p class="text-sm text-ink-soft">Bài đăng</p><p id="ov-posts" class="font-display text-4xl font-700 text-crimson">0</p></div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5"><p class="text-sm text-ink-soft">Ảnh carousel</p><p id="ov-carousel" class="font-display text-4xl font-700 text-crimson">0</p></div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5"><p class="text-sm text-ink-soft">NV trực tuyến</p><p id="ov-online" class="font-display text-4xl font-700 text-crimson">0</p></div>
+          </div>
+          <div class="mt-6 rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-6">
+            <p class="font-display text-lg font-700">Xin chào 👋</p>
+            <p class="mt-2 text-ink-soft">Dùng menu bên trái để quản lý hội thoại khách, đăng bài, đổi ảnh carousel trang chủ và quản lý nhân viên. Mọi thay đổi cập nhật ngay trên website.</p>
+            <a href="/" target="_blank" class="mt-4 inline-flex items-center gap-2 rounded-full bg-ink text-cream px-5 py-2.5 text-sm font-600 hover:bg-crimson transition-colors">Xem trang chính ↗</a>
+          </div>
+        </section>
+
+        <!-- CHAT -->
+        <section data-panel="chat" class="h-full hidden">
+          <div class="grid grid-cols-[300px_1fr] h-full">
+            <div class="border-r border-ink/10 overflow-y-auto bg-sand/40">
+              <div class="px-4 py-3 text-xs uppercase tracking-wider text-ink-soft">Cuộc trò chuyện</div>
+              <div id="list"></div>
+              <p id="list-empty" class="px-4 py-6 text-sm text-ink-soft">Chưa có khách nào nhắn.</p>
+            </div>
+            <div class="flex flex-col min-w-0">
+              <div id="conv-header" class="hidden items-center gap-3 px-5 py-3 border-b border-ink/10 bg-paper">
+                <div class="min-w-0"><p id="conv-title" class="font-600 truncate">Khách</p><p id="conv-mode" class="text-xs"></p></div>
+                <div class="ml-auto flex gap-2">
+                  <button id="btn-takeover" class="rounded-lg bg-gold text-ink px-3 py-1.5 text-sm font-600 hover:brightness-105">Tiếp nhận</button>
+                  <button id="btn-release" class="rounded-lg bg-ink/10 px-3 py-1.5 text-sm font-600 hover:bg-ink/20">Trả về bot</button>
+                </div>
+              </div>
+              <div id="conv-empty" class="flex-1 grid place-items-center text-ink-soft">← Chọn một cuộc trò chuyện</div>
+              <div id="conv" class="hidden flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-sand/20"></div>
+              <form id="reply-form" class="hidden p-3 border-t border-ink/10 flex items-end gap-2 bg-paper">
+                <textarea id="reply-input" rows="1" placeholder="Trả lời khách… (Enter để gửi)" class="flex-1 resize-none max-h-32 rounded-xl border border-ink/15 px-3.5 py-2.5 text-sm outline-none focus:border-crimson"></textarea>
+                <button class="rounded-xl bg-crimson text-cream px-4 py-2.5 text-sm font-600 hover:bg-crimson-deep">Gửi</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- POSTS -->
+        <section data-panel="posts" class="h-full hidden overflow-y-auto p-6">
+          <div class="grid lg:grid-cols-[1fr_360px] gap-6">
+            <div>
+              <h2 class="font-display text-xl font-700 mb-3">Danh sách bài đăng</h2>
+              <div id="posts-list" class="space-y-3"></div>
+              <p id="posts-empty" class="text-ink-soft">Chưa có bài đăng nào.</p>
+            </div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5 h-fit lg:sticky lg:top-2">
+              <h3 id="post-form-title" class="font-display text-lg font-700">Thêm bài đăng</h3>
+              <form id="post-form" class="mt-3 space-y-3">
+                <input type="hidden" id="post-id" />
+                <input id="post-title" placeholder="Tiêu đề" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
+                <textarea id="post-body" rows="6" placeholder="Nội dung…" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson resize-y"></textarea>
+                <div>
+                  <label class="text-sm text-ink-soft">Ảnh bìa (tuỳ chọn)</label>
+                  <input id="post-image-file" type="file" accept="image/*" class="mt-1 block w-full text-sm" />
+                  <img id="post-image-preview" class="hidden mt-2 rounded-lg max-h-32 object-cover" />
+                  <input type="hidden" id="post-image" />
+                </div>
+                <label class="flex items-center gap-2 text-sm"><input id="post-published" type="checkbox" checked /> Hiển thị công khai</label>
+                <div class="flex gap-2">
+                  <button class="rounded-full bg-crimson text-cream px-5 py-2.5 text-sm font-600 hover:bg-crimson-deep">Lưu bài</button>
+                  <button type="button" id="post-reset" class="rounded-full bg-ink/10 px-4 py-2.5 text-sm font-600 hover:bg-ink/20">Làm mới</button>
+                </div>
+                <p id="post-msg" class="text-sm"></p>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- CAROUSEL -->
+        <section data-panel="carousel" class="h-full hidden overflow-y-auto p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <h2 class="font-display text-xl font-700">Ảnh Carousel (trang chủ)</h2>
+            <label class="ml-auto inline-flex items-center gap-2 rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 cursor-pointer hover:bg-crimson-deep">
+              + Tải ảnh lên <input id="cs-file" type="file" accept="image/*" multiple class="hidden" />
+            </label>
+          </div>
+          <p class="text-sm text-ink-soft mb-2">💡 Kéo–thả các ảnh để sắp xếp lại thứ tự hiển thị trên trang chủ.</p>
+          <p id="cs-msg" class="text-sm mb-3"></p>
+          <div id="cs-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          <p id="cs-empty" class="text-ink-soft">Chưa có ảnh nào.</p>
+        </section>
+
+        <!-- GALLERY (Khoảnh khắc) -->
+        <section data-panel="gallery" class="h-full hidden overflow-y-auto p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <h2 class="font-display text-xl font-700">Ảnh "Khoảnh khắc Vinh Hoa" (trang chủ)</h2>
+            <label class="ml-auto inline-flex items-center gap-2 rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 cursor-pointer hover:bg-crimson-deep">
+              + Tải ảnh lên <input id="gl-file" type="file" accept="image/*" multiple class="hidden" />
+            </label>
+          </div>
+          <p class="text-sm text-ink-soft mb-2">💡 Kéo–thả các ảnh để sắp xếp lại thứ tự hiển thị trên trang chủ.</p>
+          <p id="gl-msg" class="text-sm mb-3"></p>
+          <div id="gl-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          <p id="gl-empty" class="text-ink-soft">Chưa có ảnh nào.</p>
+        </section>
+
+        <!-- STAFF -->
+        <section data-panel="staff" class="h-full hidden overflow-y-auto p-6">
+          <div class="grid lg:grid-cols-[1fr_340px] gap-6">
+            <div>
+              <h2 class="font-display text-xl font-700 mb-3">Nhân viên</h2>
+              <div id="agents-list" class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft px-4"></div>
+            </div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5 h-fit">
+              <h3 class="font-display text-lg font-700">Thêm nhân viên</h3>
+              <form id="add-form" class="mt-3 space-y-2">
+                <input id="ag-user" placeholder="Tên đăng nhập" class="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm outline-none focus:border-crimson" />
+                <input id="ag-name" placeholder="Tên hiển thị" class="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm outline-none focus:border-crimson" />
+                <input id="ag-pass" type="text" placeholder="Mật khẩu (≥6)" class="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm outline-none focus:border-crimson" />
+                <select id="ag-role" class="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm outline-none focus:border-crimson">
+                  <option value="agent">Nhân viên</option><option value="admin">Quản trị</option>
+                </select>
+                <button class="rounded-full bg-crimson text-cream px-5 py-2.5 text-sm font-600 hover:bg-crimson-deep">Tạo nhân viên</button>
+                <p id="add-msg" class="text-sm"></p>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ACCOUNT -->
+        <section data-panel="account" class="h-full hidden overflow-y-auto p-6">
+          <div class="max-w-md rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-6">
+            <h2 class="font-display text-xl font-700">Đổi mật khẩu của tôi</h2>
+            <form id="pw-form" class="mt-3 space-y-3">
+              <input id="pw-cur" type="password" placeholder="Mật khẩu hiện tại" autocomplete="current-password" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
+              <input id="pw-new" type="password" placeholder="Mật khẩu mới (≥6 ký tự)" autocomplete="new-password" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
+              <input id="pw-cf" type="password" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
+              <button class="rounded-full bg-crimson text-cream px-5 py-2.5 text-sm font-600 hover:bg-crimson-deep">Đổi mật khẩu</button>
+              <p id="pw-msg" class="text-sm"></p>
+            </form>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    var $ = function (id) { return document.getElementById(id); };
+    var token = localStorage.getItem('ttvh_agent_jwt') || '', me = '', meRole = 'agent';
+    var convs = {}, current = null, ws = null, retry = 0, activePanel = 'overview';
+    function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+    function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function timeStr(ts) { try { return new Date(ts).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }); } catch (e) { return ''; } }
+
+    /* ---------- login ---------- */
+    function showLogin(msg) { $('login').style.display = 'grid'; $('app').classList.add('hidden'); if (msg) { $('li-err').textContent = msg; $('li-err').classList.remove('hidden'); } }
+    function showApp() { $('login').style.display = 'none'; $('app').classList.remove('hidden'); }
+    $('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault(); $('li-err').classList.add('hidden');
+      try {
+        var r = await fetch('/api/agent/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: $('li-user').value.trim(), password: $('li-pass').value }) });
+        var j = await r.json();
+        if (!r.ok) return showLogin(j.error || 'Đăng nhập thất bại');
+        token = j.token; me = j.name; meRole = j.role || 'agent';
+        localStorage.setItem('ttvh_agent_jwt', token);
+        startApp();
+      } catch (err) { showLogin('Không kết nối được máy chủ'); }
+    });
+    $('logout').addEventListener('click', function () { localStorage.removeItem('ttvh_agent_jwt'); token = ''; try { ws && ws.close(); } catch (e) {} showLogin(); });
+
+    /* ---------- navigation ---------- */
+    var titles = { overview: 'Tổng quan', chat: 'Hội thoại', posts: 'Bài đăng', carousel: 'Carousel', gallery: 'Khoảnh khắc', staff: 'Nhân viên', account: 'Tài khoản' };
+    function go(name) {
+      activePanel = name;
+      document.querySelectorAll('[data-panel]').forEach(function (s) { s.classList.toggle('hidden', s.getAttribute('data-panel') !== name); });
+      document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-go') === name); });
+      $('title').textContent = titles[name] || '';
+      if (name === 'chat') $('chat-dot').classList.add('hidden');
+      if (name === 'posts') loadPosts();
+      if (name === 'carousel') loadCarousel();
+      if (name === 'gallery') loadGallery();
+      if (name === 'staff') loadAgents();
+      if (name === 'overview') loadOverview();
+    }
+    document.querySelectorAll('.nav-btn').forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-go')); }); });
+
+    /* ---------- overview ---------- */
+    async function loadOverview() {
+      $('ov-conv').textContent = Object.keys(convs).length;
+      try { var p = await (await fetch('/api/posts/all', { headers: authHeaders() })).json(); $('ov-posts').textContent = (p.posts || []).length; } catch (e) {}
+      try { var c = await (await fetch('/api/carousel')).json(); $('ov-carousel').textContent = (c.items || []).length; } catch (e) {}
+    }
+
+    /* ---------- image upload ---------- */
+    function fileToDataUrl(f) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(f); }); }
+    async function uploadImage(file) {
+      var dataUrl = await fileToDataUrl(file);
+      var r = await fetch('/api/upload', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ dataUrl: dataUrl }) });
+      var j = await r.json(); if (!r.ok) throw new Error(j.error || 'Tải ảnh lỗi'); return j.url;
+    }
+
+    /* ---------- posts ---------- */
+    async function loadPosts() {
+      try {
+        var j = await (await fetch('/api/posts/all', { headers: authHeaders() })).json();
+        var arr = j.posts || [];
+        $('posts-empty').style.display = arr.length ? 'none' : 'block';
+        $('posts-list').innerHTML = arr.map(function (p) {
+          return '<div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-4 flex gap-4">'
+            + (p.image ? '<img src="' + esc(p.image) + '" class="w-20 h-20 rounded-lg object-cover shrink-0" />' : '')
+            + '<div class="min-w-0 flex-1"><div class="flex items-center gap-2"><h3 class="font-600 truncate">' + esc(p.title) + '</h3>'
+            + (p.published ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Hiển thị</span>' : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600">Ẩn</span>') + '</div>'
+            + '<p class="text-sm text-ink-soft line-clamp-2 mt-0.5">' + esc((p.body || '').slice(0, 140)) + '</p>'
+            + '<div class="mt-2 flex gap-2 text-xs"><button data-edit="' + p.id + '" class="px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Sửa</button>'
+            + '<button data-del="' + p.id + '" class="px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button>'
+            + '<span class="ml-auto text-ink-soft">' + timeStr(p.createdAt) + '</span></div></div></div>';
+        }).join('');
+        window._posts = arr;
+        document.querySelectorAll('#posts-list [data-edit]').forEach(function (b) { b.onclick = function () { editPost(b.getAttribute('data-edit')); }; });
+        document.querySelectorAll('#posts-list [data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Xoá bài này?')) return; await fetch('/api/posts/' + b.getAttribute('data-del'), { method: 'DELETE', headers: authHeaders() }); loadPosts(); }; });
+      } catch (e) {}
+    }
+    function editPost(id) {
+      var p = (window._posts || []).find(function (x) { return x.id === id; }); if (!p) return;
+      $('post-id').value = p.id; $('post-title').value = p.title; $('post-body').value = p.body;
+      $('post-image').value = p.image || ''; $('post-published').checked = !!p.published;
+      var pv = $('post-image-preview'); if (p.image) { pv.src = p.image; pv.classList.remove('hidden'); } else pv.classList.add('hidden');
+      $('post-form-title').textContent = 'Sửa bài đăng'; window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function resetPostForm() { $('post-form').reset(); $('post-id').value = ''; $('post-image').value = ''; $('post-image-preview').classList.add('hidden'); $('post-form-title').textContent = 'Thêm bài đăng'; $('post-msg').textContent = ''; }
+    $('post-reset').addEventListener('click', resetPostForm);
+    $('post-image-file').addEventListener('change', async function () {
+      if (!this.files[0]) return; var msg = $('post-msg'); msg.textContent = 'Đang tải ảnh…'; msg.className = 'text-sm text-ink-soft';
+      try { var url = await uploadImage(this.files[0]); $('post-image').value = url; var pv = $('post-image-preview'); pv.src = url; pv.classList.remove('hidden'); msg.textContent = '✓ Đã tải ảnh'; msg.className = 'text-sm text-emerald-600'; }
+      catch (e) { msg.textContent = e.message; msg.className = 'text-sm text-crimson'; }
+    });
+    $('post-form').addEventListener('submit', async function (e) {
+      e.preventDefault(); var msg = $('post-msg');
+      var id = $('post-id').value;
+      var body = { title: $('post-title').value, body: $('post-body').value, image: $('post-image').value, published: $('post-published').checked };
+      try {
+        var r = await fetch('/api/posts' + (id ? '/' + id : ''), { method: id ? 'PUT' : 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+        var j = await r.json();
+        if (!r.ok) { msg.textContent = j.error || 'Lỗi'; msg.className = 'text-sm text-crimson'; return; }
+        msg.textContent = '✓ Đã lưu'; msg.className = 'text-sm text-emerald-600'; resetPostForm(); loadPosts();
+      } catch (e2) { msg.textContent = 'Lỗi kết nối'; msg.className = 'text-sm text-crimson'; }
+    });
+
+    /* ---------- kéo–thả sắp xếp ---------- */
+    function imgCard(it) {
+      return '<div draggable="true" data-id="' + it.id + '" class="sortable-item relative rounded-2xl overflow-hidden ring-1 ring-ink/10 bg-ink/5 aspect-[4/3] group cursor-grab active:cursor-grabbing">'
+        + '<img src="' + esc(it.src) + '" class="w-full h-full object-contain pointer-events-none" />'
+        + '<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/55 text-white text-xs opacity-0 group-hover:opacity-100 transition select-none">⠿ kéo để sắp xếp</span>'
+        + '<button data-del="' + it.id + '" class="absolute top-2 right-2 w-8 h-8 grid place-items-center rounded-full bg-black/55 text-white opacity-0 group-hover:opacity-100 hover:bg-crimson transition">✕</button></div>';
+    }
+    function makeSortable(gridId, endpoint, reload) {
+      var grid = $(gridId); if (!grid) return;
+      var dragEl = null;
+      grid.querySelectorAll('.sortable-item').forEach(function (el) {
+        el.addEventListener('dragstart', function (e) { dragEl = el; el.classList.add('opacity-40'); e.dataTransfer.effectAllowed = 'move'; });
+        el.addEventListener('dragend', function () { el.classList.remove('opacity-40'); dragEl = null; saveOrder(); });
+        el.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          if (!dragEl || dragEl === el) return;
+          var r = el.getBoundingClientRect();
+          var after = (e.clientY - r.top) > r.height / 2 || (e.clientX - r.left) > r.width / 2;
+          grid.insertBefore(dragEl, after ? el.nextSibling : el);
+        });
+      });
+      async function saveOrder() {
+        var ids = Array.prototype.map.call(grid.querySelectorAll('.sortable-item'), function (el) { return el.getAttribute('data-id'); });
+        try { await fetch(endpoint, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ ids: ids }) }); } catch (e) {}
+      }
+    }
+
+    /* ---------- carousel ---------- */
+    async function loadCarousel() {
+      try {
+        var j = await (await fetch('/api/carousel')).json();
+        var arr = j.items || [];
+        $('cs-empty').style.display = arr.length ? 'none' : 'block';
+        $('cs-grid').innerHTML = arr.map(imgCard).join('');
+        document.querySelectorAll('#cs-grid [data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Xoá ảnh này khỏi carousel?')) return; await fetch('/api/carousel/' + b.getAttribute('data-del'), { method: 'DELETE', headers: authHeaders() }); loadCarousel(); }; });
+        makeSortable('cs-grid', '/api/carousel/order', loadCarousel);
+      } catch (e) {}
+    }
+    $('cs-file').addEventListener('change', async function () {
+      var files = Array.prototype.slice.call(this.files); if (!files.length) return;
+      var msg = $('cs-msg'); msg.textContent = 'Đang tải ' + files.length + ' ảnh…'; msg.className = 'text-sm text-ink-soft';
+      try {
+        for (var i = 0; i < files.length; i++) { var url = await uploadImage(files[i]); await fetch('/api/carousel', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ src: url }) }); }
+        msg.textContent = '✓ Đã thêm ảnh'; msg.className = 'text-sm text-emerald-600'; this.value = ''; loadCarousel();
+      } catch (e) { msg.textContent = e.message; msg.className = 'text-sm text-crimson'; }
+    });
+
+    /* ---------- gallery (Khoảnh khắc) ---------- */
+    async function loadGallery() {
+      try {
+        var j = await (await fetch('/api/gallery')).json();
+        var arr = j.items || [];
+        $('gl-empty').style.display = arr.length ? 'none' : 'block';
+        $('gl-grid').innerHTML = arr.map(imgCard).join('');
+        document.querySelectorAll('#gl-grid [data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Xoá ảnh này khỏi Khoảnh khắc?')) return; await fetch('/api/gallery/' + b.getAttribute('data-del'), { method: 'DELETE', headers: authHeaders() }); loadGallery(); }; });
+        makeSortable('gl-grid', '/api/gallery/order', loadGallery);
+      } catch (e) {}
+    }
+    $('gl-file').addEventListener('change', async function () {
+      var files = Array.prototype.slice.call(this.files); if (!files.length) return;
+      var msg = $('gl-msg'); msg.textContent = 'Đang tải ' + files.length + ' ảnh…'; msg.className = 'text-sm text-ink-soft';
+      try {
+        for (var i = 0; i < files.length; i++) { var url = await uploadImage(files[i]); await fetch('/api/gallery', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ src: url }) }); }
+        msg.textContent = '✓ Đã thêm ảnh'; msg.className = 'text-sm text-emerald-600'; this.value = ''; loadGallery();
+      } catch (e) { msg.textContent = e.message; msg.className = 'text-sm text-crimson'; }
+    });
+
+    /* ---------- staff ---------- */
+    async function loadAgents() {
+      if (meRole !== 'admin') { $('agents-list').innerHTML = '<p class="py-4 text-ink-soft">Chỉ quản trị viên mới xem được.</p>'; return; }
+      try {
+        var j = await (await fetch('/api/agents', { headers: authHeaders() })).json();
+        $('agents-list').innerHTML = (j.agents || []).map(function (a) {
+          return '<div class="flex items-center gap-2 py-3 border-b border-ink/10 last:border-0"><div class="min-w-0"><div class="font-600 truncate">' + esc(a.name) + ' <span class="text-ink-soft font-400">@' + esc(a.username) + '</span>' + (a.role === 'admin' ? ' <span class="text-[10px] px-1.5 py-0.5 rounded bg-crimson/10 text-crimson">admin</span>' : '') + '</div></div>'
+            + '<div class="ml-auto flex gap-2 shrink-0"><button data-reset="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Đặt lại MK</button>'
+            + '<button data-del="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>';
+        }).join('');
+        document.querySelectorAll('#agents-list [data-reset]').forEach(function (b) { b.onclick = async function () { var u = b.getAttribute('data-reset'); var p = prompt('Mật khẩu mới cho @' + u + ' (≥6):'); if (!p) return; var r = await fetch('/api/agents/' + encodeURIComponent(u) + '/reset-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ password: p }) }); alert((await r.json()).error || '✓ Đã đặt lại'); }; });
+        document.querySelectorAll('#agents-list [data-del]').forEach(function (b) { b.onclick = async function () { var u = b.getAttribute('data-del'); if (!confirm('Xoá @' + u + '?')) return; var r = await fetch('/api/agents/' + encodeURIComponent(u), { method: 'DELETE', headers: authHeaders() }); if (r.ok) loadAgents(); else alert((await r.json()).error || 'Lỗi'); }; });
+      } catch (e) {}
+    }
+    $('add-form').addEventListener('submit', async function (e) {
+      e.preventDefault(); var msg = $('add-msg');
+      try {
+        var r = await fetch('/api/agents', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ username: $('ag-user').value, name: $('ag-name').value, password: $('ag-pass').value, role: $('ag-role').value }) });
+        var j = await r.json();
+        if (r.ok) { msg.textContent = '✓ Đã tạo @' + j.username; msg.className = 'text-sm text-emerald-600'; $('add-form').reset(); loadAgents(); }
+        else { msg.textContent = j.error || 'Lỗi'; msg.className = 'text-sm text-crimson'; }
+      } catch (e2) { msg.textContent = 'Lỗi kết nối'; msg.className = 'text-sm text-crimson'; }
+    });
+
+    /* ---------- account ---------- */
+    $('pw-form').addEventListener('submit', async function (e) {
+      e.preventDefault(); var msg = $('pw-msg');
+      if ($('pw-new').value !== $('pw-cf').value) { msg.textContent = 'Mật khẩu xác nhận không khớp'; msg.className = 'text-sm text-crimson'; return; }
+      try {
+        var r = await fetch('/api/agent/change-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ currentPassword: $('pw-cur').value, newPassword: $('pw-new').value }) });
+        var j = await r.json();
+        if (r.ok) { msg.textContent = '✓ Đã đổi mật khẩu'; msg.className = 'text-sm text-emerald-600'; $('pw-form').reset(); }
+        else { msg.textContent = j.error || 'Lỗi'; msg.className = 'text-sm text-crimson'; }
+      } catch (e2) { msg.textContent = 'Lỗi kết nối'; msg.className = 'text-sm text-crimson'; }
+    });
+
+    /* ---------- chat (realtime) ---------- */
+    function setConn(state) {
+      var el = $('conn');
+      if (state === 'on') { el.className = 'px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700'; el.textContent = '● Trực tuyến'; }
+      else if (state === 'connecting') { el.className = 'px-2.5 py-1 rounded-full bg-amber-100 text-amber-700'; el.textContent = '● Đang kết nối…'; }
+      else { el.className = 'px-2.5 py-1 rounded-full bg-gray-200 text-gray-600'; el.textContent = '● Ngoại tuyến'; }
+    }
+    function connect() {
+      if (!token) return showLogin();
+      setConn('connecting');
+      var proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      try { ws = new WebSocket(proto + '://' + location.host + '/ws'); } catch (e) { setConn('off'); return; }
+      ws.onopen = function () { retry = 0; setConn('on'); send({ type: 'hello', role: 'agent', token: token }); };
+      ws.onmessage = function (ev) {
+        var m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+        if (m.type === 'agent_init') { me = m.me || me; meRole = m.role || meRole; $('me').textContent = '👤 ' + me + (meRole === 'admin' ? ' (admin)' : ''); $('nav-staff').style.display = meRole === 'admin' ? '' : 'none'; convs = {}; (m.conversations || []).forEach(function (c) { convs[c.cid] = c; }); renderList(); if (!current) { var s = sorted(); if (s.length) select(s[0].cid); } $('ov-conv').textContent = Object.keys(convs).length; }
+        else if (m.type === 'update') { convs[m.conv.cid] = m.conv; renderList(); if (current === m.conv.cid) renderConv(); if (activePanel !== 'chat') $('chat-dot').classList.remove('hidden'); $('ov-conv').textContent = Object.keys(convs).length; }
+        else if (m.type === 'presence') { var n = (m.agents || []).length; $('presence').textContent = n + ' NV trực tuyến'; $('ov-online').textContent = n; }
+        else if (m.type === 'auth_error') { localStorage.removeItem('ttvh_agent_jwt'); token = ''; try { ws.close(); } catch (e) {} showLogin('Phiên hết hạn, vui lòng đăng nhập lại.'); }
+      };
+      ws.onclose = function () { setConn('off'); if (token) { retry = Math.min(retry + 1, 6); setTimeout(connect, 1000 * retry); } };
+      ws.onerror = function () { try { ws.close(); } catch (e) {} };
+    }
+    function send(o) { try { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); } catch (e) {} }
+    function sorted() { return Object.values(convs).sort(function (a, b) { return b.updatedAt - a.updatedAt; }); }
+    function renderList() {
+      var arr = sorted(); $('list-empty').style.display = arr.length ? 'none' : 'block';
+      $('list').innerHTML = arr.map(function (c) {
+        var last = c.messages[c.messages.length - 1] || { role: '', text: '' };
+        var who = last.role === 'user' ? 'Khách' : (last.role === 'agent' ? 'NV' : 'Bot');
+        var badge = c.mode === 'human' ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-gold/25 text-gold-deep">' + (c.assignedTo ? esc(c.assignedTo) : 'NV') + '</span>' : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Auto</span>';
+        return '<button data-cid="' + c.cid + '" class="w-full text-left px-4 py-3 border-b border-ink/5 hover:bg-ink/5 ' + (c.cid === current ? 'bg-ink/10' : '') + '"><div class="flex items-center gap-2"><span class="font-600 text-sm truncate">Khách ' + esc(c.cid.slice(-4)) + '</span>' + badge + '<span class="ml-auto text-[10px] text-ink-soft">' + timeStr(c.updatedAt) + '</span></div><div class="text-xs text-ink-soft truncate mt-0.5">' + esc(who) + ': ' + esc(last.text) + '</div></button>';
+      }).join('');
+      document.querySelectorAll('#list [data-cid]').forEach(function (b) { b.onclick = function () { select(b.getAttribute('data-cid')); }; });
+    }
+    function renderConv() {
+      var has = !!current && convs[current];
+      $('conv-empty').style.display = has ? 'none' : 'grid';
+      $('conv').classList.toggle('hidden', !has);
+      $('conv-header').classList.toggle('hidden', !has); $('conv-header').classList.toggle('flex', has);
+      $('reply-form').classList.toggle('hidden', !has); $('reply-form').classList.toggle('flex', has);
+      if (!has) return;
+      var c = convs[current];
+      $('conv-title').textContent = 'Khách ' + current.slice(-4);
+      var mEl = $('conv-mode');
+      mEl.textContent = c.mode === 'human' ? ('● Đang phụ trách: ' + (c.assignedTo || 'NV') + (c.assignedTo === me ? ' (bạn)' : '')) : '○ Bot tự động đang trả lời';
+      mEl.className = 'text-xs ' + (c.mode === 'human' ? 'text-gold-deep' : 'text-emerald-600');
+      $('conv').innerHTML = c.messages.map(function (mm) {
+        var isUser = mm.role === 'user';
+        var side = isUser ? 'justify-start' : 'justify-end';
+        var label = mm.role === 'agent' ? esc(mm.agentName || 'Nhân viên') : (mm.role === 'bot' ? 'Bot' : '');
+        var tag = label ? '<div class="text-[10px] font-700 mb-0.5 ' + (mm.role === 'agent' ? 'text-gold-deep' : 'text-ink-soft') + '">' + label + '</div>' : '';
+        var bg = isUser ? 'bg-paper ring-1 ring-ink/10 text-ink' : (mm.role === 'agent' ? 'bg-gold text-ink' : 'bg-crimson text-cream');
+        return '<div class="flex ' + side + '"><div class="max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm whitespace-pre-wrap break-words ' + bg + '">' + tag + esc(mm.text) + '</div></div>';
+      }).join('');
+      var cc = $('conv'); cc.scrollTop = cc.scrollHeight;
+    }
+    function select(cid) { current = cid; renderList(); renderConv(); }
+    $('btn-takeover').addEventListener('click', function () { if (current) send({ type: 'set_mode', cid: current, mode: 'human' }); });
+    $('btn-release').addEventListener('click', function () { if (current) send({ type: 'set_mode', cid: current, mode: 'auto' }); });
+    var rInput = $('reply-input'), typingTimer = null;
+    rInput.addEventListener('input', function () { rInput.style.height = 'auto'; rInput.style.height = Math.min(rInput.scrollHeight, 128) + 'px'; if (current) { send({ type: 'agent_typing', cid: current, on: true }); clearTimeout(typingTimer); typingTimer = setTimeout(function () { send({ type: 'agent_typing', cid: current, on: false }); }, 1200); } });
+    rInput.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('reply-form').requestSubmit(); } });
+    $('reply-form').addEventListener('submit', function (e) { e.preventDefault(); var t = (rInput.value || '').trim(); if (!t || !current) return; rInput.value = ''; rInput.style.height = 'auto'; send({ type: 'agent_typing', cid: current, on: false }); send({ type: 'agent_msg', cid: current, text: t }); });
+
+    /* ---------- start ---------- */
+    function startApp() { showApp(); go('overview'); connect(); }
+    if (token) startApp(); else showLogin();
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Phụ thuộc
+node_modules/
+server/node_modules/
+
+# Bí mật — KHÔNG đẩy lên GitHub
+.env
+server/.env
+
+# Dữ liệu cục bộ (production dùng Postgres)
+server/data/
+
+# Ảnh người dùng tải lên (production lưu trên volume)
+images/uploads/
+
+# Linh tinh
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thịnh Thế Vinh Hoa — Hệ sinh thái F&amp;B</title>
+  <meta name="description" content="Thịnh Thế Vinh Hoa — tập đoàn F&B sở hữu các thương hiệu Maycha, Hồng Trà Sữa Tâm Hảo, Gà Giòn Sốt Ba Cô Gái và TràHú. Kiến tạo hương vị, vun đắp thịnh vượng." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream:'#FBF7F0', sand:'#F3EADb', paper:'#FFFFFF',
+            ink:'#1B1714', 'ink-soft':'#6A5F54',
+            gold:'#C19A2B', 'gold-deep':'#937218',
+            crimson:'#A8131C', 'crimson-deep':'#7C0E15',
+            sky:'#3E97C6', ruby:'#C0392B', amber:'#E2890C', leaf:'#5C9A3C',
+          },
+          fontFamily: {
+            display:['"Playfair Display"','ui-serif','Georgia','serif'],
+            sans:['"Be Vietnam Pro"','ui-sans-serif','system-ui','sans-serif'],
+          },
+          boxShadow: {
+            soft:'0 14px 40px -18px rgba(124,14,21,0.25)',
+            lift:'0 26px 60px -22px rgba(124,14,21,0.35)',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root{ color-scheme:light; }
+    body{ background:#FBF7F0; }
+
+    .reveal{ opacity:0; transform:translateY(28px); transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+    .reveal.is-visible{ opacity:1; transform:none; }
+    .reveal[data-delay="1"]{ transition-delay:.08s } .reveal[data-delay="2"]{ transition-delay:.16s }
+    .reveal[data-delay="3"]{ transition-delay:.24s } .reveal[data-delay="4"]{ transition-delay:.32s }
+
+    @keyframes float-y{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+    @keyframes float-y-slow{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+    @keyframes blob{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(16px,-12px) scale(1.05)}66%{transform:translate(-12px,10px) scale(.96)}}
+    @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @keyframes spin-slow{to{transform:rotate(360deg)}}
+    .anim-float{animation:float-y 6s ease-in-out infinite}
+    .anim-float-slow{animation:float-y-slow 7.5s ease-in-out infinite}
+    .anim-blob{animation:blob 18s ease-in-out infinite}
+    .marquee-track{animation:marquee 30s linear infinite}
+    .spin-slow{animation:spin-slow 60s linear infinite}
+
+    #nav{ transition:padding .3s ease, background-color .3s ease, box-shadow .3s ease, backdrop-filter .3s ease; }
+    #nav.shrink{ box-shadow:0 10px 30px -20px rgba(124,14,21,.45); }
+    .link-underline{ position:relative }
+    .link-underline::after{ content:""; position:absolute; left:0; bottom:-4px; height:2px; width:0; background:#A8131C; transition:width .28s ease }
+    .link-underline:hover::after, .link-underline:focus-visible::after{ width:100% }
+    a:focus-visible, button:focus-visible{ outline:3px solid #A8131C; outline-offset:3px; border-radius:6px }
+
+    .badge-todo{ font-size:11px; font-weight:600; color:#7C0E15; background:#F6E2C9; border:1px dashed #C19A2B; border-radius:9999px; padding:2px 8px; }
+
+    /* ----- Carousel (auto-fit any image size) ----- */
+    .carousel-stage{ position:relative; width:100%; aspect-ratio:16/10; border-radius:1.75rem; overflow:hidden; background:#1B1714; outline:none; }
+    .slide{ position:absolute; inset:0; opacity:0; visibility:hidden; transition:opacity .6s ease; }
+    .slide.active{ opacity:1; visibility:visible; }
+    .slide-bg{ position:absolute; inset:0; background-size:cover; background-position:center; filter:blur(30px) brightness(.55); transform:scale(1.2); }
+    .slide-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+    .car-btn{ position:absolute; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:44px; height:44px; border-radius:9999px; background:rgba(251,247,240,.92); color:#1B1714; box-shadow:0 8px 24px -8px rgba(0,0,0,.5); cursor:pointer; transition:background .2s ease, transform .2s ease; }
+    .car-btn:hover{ background:#fff; transform:translateY(-50%) scale(1.06); }
+
+    /* ----- Chat widget ----- */
+    @keyframes chat-pulse{0%{box-shadow:0 0 0 0 rgba(0,104,255,.45)}70%{box-shadow:0 0 0 18px rgba(0,104,255,0)}100%{box-shadow:0 0 0 0 rgba(0,104,255,0)}}
+    .chat-pulse{ animation:chat-pulse 2.4s ease-out infinite }
+    #chat-panel{ opacity:0; visibility:hidden; transform:translateY(12px) scale(.96); transform-origin:bottom right; transition:opacity .25s ease, transform .25s ease, visibility .25s; }
+    #chat-panel.is-open{ opacity:1; visibility:visible; transform:none; }
+    @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+    .typing-dot{ animation:blink 1.4s infinite both; font-weight:700 }
+    .typing-dot:nth-child(2){ animation-delay:.2s } .typing-dot:nth-child(3){ animation-delay:.4s }
+    #chat-messages::-webkit-scrollbar{ width:8px } #chat-messages::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.16); border-radius:9999px }
+
+    @media (prefers-reduced-motion: reduce){
+      .slide{ transition:none; }
+      .reveal{opacity:1!important;transform:none!important;transition:none!important}
+      .anim-float,.anim-float-slow,.anim-blob,.marquee-track,.spin-slow,.chat-pulse,.typing-dot{animation:none!important}
+      #chat-panel{ transition:none }
+      html{scroll-behavior:auto}
+    }
+  </style>
+</head>
+
+<body class="font-sans text-ink antialiased selection:bg-gold/30">
+
+  <a href="#thuong-hieu" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-crimson focus:text-cream focus:px-4 focus:py-2 focus:rounded-full">Đến phần thương hiệu</a>
+
+  <!-- ============ NAV ============ -->
+  <header id="nav" class="fixed top-0 inset-x-0 z-50 py-5">
+    <nav class="mx-auto max-w-7xl px-5 sm:px-8 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-3 group" aria-label="Thịnh Thế Vinh Hoa - Trang chủ">
+        <img src="images/logos/ttvh.jpg" alt="Thịnh Thế Vinh Hoa" class="h-12 sm:h-14 w-auto rounded-xl transition-transform duration-300 group-hover:scale-105" />
+        <span class="leading-tight hidden sm:block">
+          <span class="block font-display text-lg sm:text-xl font-700 tracking-tight">Thịnh Thế Vinh Hoa</span>
+          <span class="block text-[11px] tracking-[0.2em] uppercase text-ink-soft">F&amp;B Group</span>
+        </span>
+      </a>
+
+      <div class="hidden lg:flex items-center gap-8 text-[15px] font-500 text-ink-soft">
+        <a href="#gioi-thieu" class="link-underline hover:text-ink transition-colors">Giới thiệu</a>
+        <a href="#thuong-hieu" class="link-underline hover:text-ink transition-colors">Thương hiệu</a>
+        <a href="#hinh-anh" class="link-underline hover:text-ink transition-colors">Hình ảnh</a>
+        <a href="#gia-tri" class="link-underline hover:text-ink transition-colors">Giá trị</a>
+        <a href="#tin-tuc" class="link-underline hover:text-ink transition-colors">Tin tức</a>
+        <a href="#tuyen-dung" class="link-underline hover:text-ink transition-colors">Tuyển dụng</a>
+        <a href="#lien-he" class="link-underline hover:text-ink transition-colors">Liên hệ</a>
+      </div>
+
+      <a href="#tuyen-dung" class="inline-flex items-center gap-2 rounded-full bg-ink text-cream px-5 py-2.5 text-sm font-600 cursor-pointer shadow-soft hover:bg-crimson transition-colors duration-300">
+        Ứng tuyển
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </nav>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section id="top" class="relative overflow-hidden pt-36 pb-24 sm:pt-44 sm:pb-32">
+    <div class="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-gold/25 blur-3xl anim-blob"></div>
+    <div class="pointer-events-none absolute top-40 -right-28 w-[28rem] h-[28rem] rounded-full bg-crimson/10 blur-3xl anim-blob" style="animation-delay:-6s"></div>
+
+    <div class="relative mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-[1.05fr_.95fr] gap-12 items-center">
+      <div>
+        <p class="reveal inline-flex items-center gap-2 rounded-full border border-crimson/25 bg-white/60 px-4 py-1.5 text-sm font-600 text-crimson">
+          <span class="w-2 h-2 rounded-full bg-gold"></span> Hệ sinh thái F&amp;B đa thương hiệu
+        </p>
+        <h1 class="reveal mt-6 font-display font-700 leading-[1.02] tracking-tight text-4xl sm:text-6xl lg:text-[4.2rem]" data-delay="1">
+          Thịnh Thế <span class="text-crimson">Vinh Hoa</span>
+        </h1>
+        <p class="reveal mt-3 font-display italic text-xl sm:text-2xl text-gold-deep" data-delay="1">Vững thời · Sáng vận · Đẹp danh.</p>
+        <p class="reveal mt-6 max-w-xl text-lg text-ink-soft leading-relaxed" data-delay="2">
+          Một mái nhà cho những thương hiệu ẩm thực &amp; đồ uống được yêu thích: từ ly trà sữa kem mây,
+          tách hồng trà đậm vị đến miếng gà giòn nóng hổi. Mỗi thương hiệu một cá tính, chung một cam kết về chất lượng.
+        </p>
+        <div class="reveal mt-9 flex flex-wrap items-center gap-4" data-delay="3">
+          <a href="#thuong-hieu" class="inline-flex items-center gap-2 rounded-full bg-crimson text-cream px-7 py-3.5 font-600 cursor-pointer shadow-soft hover:bg-crimson-deep hover:-translate-y-0.5 transition-all duration-300">Khám phá thương hiệu</a>
+          <a href="#tuyen-dung" class="inline-flex items-center gap-2 rounded-full bg-white text-ink px-7 py-3.5 font-600 cursor-pointer ring-1 ring-ink/10 hover:ring-crimson/40 hover:-translate-y-0.5 transition-all duration-300">Cơ hội nghề nghiệp</a>
+        </div>
+
+        <div class="reveal mt-8 flex flex-wrap items-center gap-3" data-delay="4">
+          <span class="inline-flex items-center rounded-full bg-cream ring-1 ring-ink/10 px-4 py-2 shadow-soft"><img src="images/logos/maycha.png" alt="MAYCHA" loading="lazy" decoding="async" class="h-6 w-auto object-contain" /></span>
+          <span class="inline-flex items-center rounded-full bg-cream ring-1 ring-ink/10 px-4 py-2 shadow-soft"><img src="images/logos/tamhao.png" alt="Hồng Trà Sữa Tam Hảo" loading="lazy" decoding="async" class="h-8 w-auto object-contain" /></span>
+          <span class="inline-flex items-center rounded-full bg-cream ring-1 ring-ink/10 px-4 py-2 shadow-soft"><img src="images/logos/garan.png" alt="Gà Giòn Sốt Ba Cô Gái" loading="lazy" decoding="async" class="h-8 w-auto object-contain" /></span>
+          <span class="inline-flex items-center rounded-full bg-ink ring-1 ring-ink/10 px-4 py-2 shadow-soft"><img src="images/logos/trahu.png" alt="TràHú" loading="lazy" decoding="async" class="h-8 w-auto object-contain" /></span>
+        </div>
+      </div>
+
+      <!-- hero art: carousel of latest images -->
+      <div class="relative h-[24rem] sm:h-[30rem]">
+        <div class="absolute -inset-3 rounded-[2.75rem] border border-gold/40 spin-slow pointer-events-none"></div>
+        <div id="hero-carousel" class="relative h-full w-full rounded-[2.25rem] overflow-hidden bg-gradient-to-br from-crimson to-crimson-deep shadow-lift" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Hình ảnh mới nhất của Thịnh Thế Vinh Hoa">
+          <div id="hero-track"></div>
+          <button id="hero-prev" class="car-btn" style="left:12px" aria-label="Ảnh trước"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button id="hero-next" class="car-btn" style="right:12px" aria-label="Ảnh kế tiếp"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          <div id="hero-dots" class="absolute bottom-3.5 inset-x-0 z-10 flex justify-center items-center gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MARQUEE ============ -->
+  <div class="bg-gradient-to-r from-crimson-deep via-crimson to-crimson-deep text-cream py-4 overflow-hidden" aria-hidden="true">
+    <div class="flex w-max marquee-track whitespace-nowrap">
+      <div class="flex items-center gap-8 pr-8 font-display text-lg sm:text-xl font-600 italic">
+        <span>Trà sữa kem mây</span><span class="text-gold">✦</span>
+        <span>Hồng trà đậm vị</span><span class="text-gold">✦</span>
+        <span>Gà giòn sốt đặc biệt</span><span class="text-gold">✦</span>
+        <span>Trà hú thượng hạng</span><span class="text-gold">✦</span>
+        <span>Thịnh Thế Vinh Hoa</span><span class="text-gold">✦</span>
+      </div>
+      <div class="flex items-center gap-8 pr-8 font-display text-lg sm:text-xl font-600 italic">
+        <span>Trà sữa kem mây</span><span class="text-gold">✦</span>
+        <span>Hồng trà đậm vị</span><span class="text-gold">✦</span>
+        <span>Gà giòn sốt đặc biệt</span><span class="text-gold">✦</span>
+        <span>Trà hú thượng hạng</span><span class="text-gold">✦</span>
+        <span>Thịnh Thế Vinh Hoa</span><span class="text-gold">✦</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ GIỚI THIỆU ============ -->
+  <section id="gioi-thieu" class="py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+      <div>
+        <p class="reveal text-sm font-700 tracking-widest uppercase text-gold-deep">Về tập đoàn</p>
+        <h2 class="reveal mt-3 font-display text-4xl sm:text-5xl font-700 leading-tight" data-delay="1">Nhiều thương hiệu. Một chuẩn mực.</h2>
+        <p class="reveal mt-6 text-lg text-ink-soft leading-relaxed" data-delay="2">
+          Thịnh Thế Vinh Hoa là doanh nghiệp F&amp;B đặt trụ sở tại TP. Hồ Chí Minh, phát triển và vận hành
+          chuỗi thương hiệu trà sữa, trà và gà giòn. Chúng tôi tin rằng một ly đồ uống ngon hay một phần ăn
+          hấp dẫn không chỉ đến từ công thức, mà còn từ con người và quy trình vận hành tử tế.
+        </p>
+        <p class="reveal mt-4 text-lg text-ink-soft leading-relaxed" data-delay="3">
+          <span class="badge-todo">Cần bổ sung</span> Câu chuyện thành lập, năm hoạt động, sứ mệnh &amp; tầm nhìn chính thức của công ty.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-5">
+        <div class="reveal rounded-3xl bg-paper p-7 ring-1 ring-ink/5 shadow-soft">
+          <p class="font-display text-4xl font-700 text-crimson count" data-target="4">0</p>
+          <p class="mt-1 text-ink-soft">thương hiệu trong hệ sinh thái</p>
+        </div>
+        <div class="reveal rounded-3xl bg-paper p-7 ring-1 ring-ink/5 shadow-soft" data-delay="1">
+          <p class="font-display text-4xl font-700 text-crimson">5 Tỉnh Thành</p>
+          <p class="mt-1 text-ink-soft">trụ sở &amp; vùng hoạt động</p>
+        </div>
+        <div class="reveal rounded-3xl bg-paper p-7 ring-1 ring-ink/5 shadow-soft" data-delay="2">
+          <p class="font-display text-4xl font-700 text-crimson"><span class="count" data-target="200">0</span>+ <span class="badge-todo align-middle">tạm</span></p>
+          <p class="mt-1 text-ink-soft">điểm bán &amp; cộng tác viên</p>
+        </div>
+        <div class="reveal rounded-3xl bg-paper p-7 ring-1 ring-ink/5 shadow-soft" data-delay="3">
+          <p class="font-display text-4xl font-700 text-crimson">100%</p>
+          <p class="mt-1 text-ink-soft">cam kết nguyên liệu chuẩn</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ THƯƠNG HIỆU ============ -->
+  <section id="thuong-hieu" class="py-24 sm:py-32 bg-sand">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8">
+      <div class="max-w-2xl">
+        <p class="reveal text-sm font-700 tracking-widest uppercase text-gold-deep">Hệ thống thương hiệu</p>
+        <h2 class="reveal mt-3 font-display text-4xl sm:text-5xl font-700 leading-tight" data-delay="1">Bốn cá tính, một gia đình.</h2>
+        <p class="reveal mt-4 text-ink-soft text-lg" data-delay="2">Nhấn vào từng thương hiệu để ghé thăm Fanpage chính thức.</p>
+      </div>
+
+      <div class="mt-14 grid md:grid-cols-2 gap-6">
+
+        <!-- MayCha -->
+        <article class="reveal group rounded-3xl bg-paper p-7 sm:p-8 ring-1 ring-ink/5 shadow-soft hover:shadow-lift hover:-translate-y-1.5 transition-all duration-300">
+          <div class="h-28 rounded-2xl bg-cream grid place-items-center px-6 overflow-hidden">
+            <img src="images/logos/maycha.png" alt="MAYCHA" loading="lazy" decoding="async" class="max-h-20 max-w-[82%] w-auto object-contain" />
+          </div>
+          <span class="mt-4 inline-block text-xs font-700 uppercase tracking-wide text-sky/80">Trà sữa</span>
+          <p class="mt-2 text-ink-soft leading-relaxed">Trà sữa phủ lớp kem mây mịn, vị nhẹ nhàng và hợp gu giới trẻ. <span class="badge-todo">Bổ sung menu &amp; giá</span></p>
+          <a href="https://www.facebook.com/maycha38" target="_blank" rel="noopener" class="mt-5 inline-flex items-center gap-2 font-600 text-sky cursor-pointer hover:gap-3 transition-all">
+            Xem Fanpage
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </article>
+
+        <!-- Tam Hảo -->
+        <article class="reveal group rounded-3xl bg-paper p-7 sm:p-8 ring-1 ring-ink/5 shadow-soft hover:shadow-lift hover:-translate-y-1.5 transition-all duration-300" data-delay="1">
+          <div class="h-28 rounded-2xl bg-cream grid place-items-center px-6 overflow-hidden">
+            <img src="images/logos/tamhao.png" alt="Hồng Trà Sữa Tam Hảo" loading="lazy" decoding="async" class="max-h-24 max-w-[82%] w-auto object-contain" />
+          </div>
+          <span class="mt-4 inline-block text-xs font-700 uppercase tracking-wide text-ruby/80">Hồng trà sữa</span>
+          <p class="mt-2 text-ink-soft leading-relaxed">Hồng trà sữa truyền thống, vị đậm đà, ấm áp như chính cái tên "Tam Hảo". <span class="badge-todo">Bổ sung menu &amp; giá</span></p>
+          <a href="https://www.facebook.com/hongtrasuatamhao" target="_blank" rel="noopener" class="mt-5 inline-flex items-center gap-2 font-600 text-ruby cursor-pointer hover:gap-3 transition-all">
+            Xem Fanpage
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </article>
+
+        <!-- Ba Cô Gái -->
+        <article class="reveal group rounded-3xl bg-paper p-7 sm:p-8 ring-1 ring-ink/5 shadow-soft hover:shadow-lift hover:-translate-y-1.5 transition-all duration-300" data-delay="2">
+          <div class="h-28 rounded-2xl bg-cream grid place-items-center px-6 overflow-hidden">
+            <img src="images/logos/garan.png" alt="Gà Giòn Sốt Ba Cô Gái" loading="lazy" decoding="async" class="max-h-24 max-w-[70%] w-auto object-contain" />
+          </div>
+          <span class="mt-4 inline-block text-xs font-700 uppercase tracking-wide text-amber/90">Gà giòn</span>
+          <p class="mt-2 text-ink-soft leading-relaxed">Gà rán giòn rụm chan sốt đặc biệt "Ba Cô Gái" — món mặn chủ lực của hệ sinh thái. <span class="badge-todo">Bổ sung menu &amp; giá</span></p>
+          <a href="https://www.facebook.com/gagionsot.bacogai" target="_blank" rel="noopener" class="mt-5 inline-flex items-center gap-2 font-600 text-amber cursor-pointer hover:gap-3 transition-all">
+            Xem Fanpage
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </article>
+
+        <!-- TràHú -->
+        <article class="reveal group rounded-3xl bg-paper p-7 sm:p-8 ring-1 ring-ink/5 shadow-soft hover:shadow-lift hover:-translate-y-1.5 transition-all duration-300" data-delay="3">
+          <div class="h-28 rounded-2xl bg-ink grid place-items-center px-6 overflow-hidden">
+            <img src="images/logos/trahu.png" alt="TràHú — Đậm Hú Hồn" loading="lazy" decoding="async" class="max-h-24 max-w-[60%] w-auto object-contain" />
+          </div>
+          <span class="mt-4 inline-block text-xs font-700 uppercase tracking-wide text-leaf/90">Trà hũ</span>
+          <p class="mt-2 text-ink-soft leading-relaxed">Trà đựng trong hũ, hương vị đậm "hú hồn" — trẻ trung, vui nhộn và rất bắt trend. <span class="badge-todo">Bổ sung menu &amp; giá</span></p>
+          <a href="https://www.facebook.com/trahu.damhuhon" target="_blank" rel="noopener" class="mt-5 inline-flex items-center gap-2 font-600 text-leaf cursor-pointer hover:gap-3 transition-all">
+            Xem Fanpage
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HÌNH ẢNH / CAROUSEL ============ -->
+  <section id="hinh-anh" class="py-24 sm:py-32">
+    <div class="mx-auto max-w-5xl px-5 sm:px-8">
+      <div class="max-w-2xl">
+        <p class="reveal text-sm font-700 tracking-widest uppercase text-gold-deep">Khoảnh khắc</p>
+        <h2 class="reveal mt-3 font-display text-4xl sm:text-5xl font-700 leading-tight" data-delay="1">Khoảnh khắc Vinh Hoa.</h2>
+        <p class="reveal mt-3 text-ink-soft text-lg" data-delay="2">Ảnh sự kiện, cửa hàng &amp; đội ngũ — cập nhật từ trang quản trị.</p>
+      </div>
+
+      <div class="reveal mt-10" data-delay="2">
+        <div id="carousel" class="carousel-stage shadow-lift" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Hình ảnh mới nhất Thịnh Thế Vinh Hoa">
+          <div id="carousel-track"></div>
+
+          <div id="carousel-empty" class="absolute inset-0 grid place-items-center text-center p-8">
+            <div>
+              <div class="mx-auto w-16 h-16 rounded-2xl bg-cream/10 grid place-items-center text-cream/70">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5L5 19"/></svg>
+              </div>
+              <p class="mt-4 text-cream/90 font-600">Chưa có ảnh nào</p>
+              <p class="text-cream/60 text-sm">Kéo–thả ảnh vào đây hoặc bấm “Tải ảnh lên”.</p>
+            </div>
+          </div>
+
+          <button id="carousel-prev" class="car-btn" style="left:14px" aria-label="Ảnh trước"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button id="carousel-next" class="car-btn" style="right:14px" aria-label="Ảnh kế tiếp"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          <button id="carousel-del" class="absolute top-3.5 right-3.5 grid place-items-center w-10 h-10 rounded-full bg-black/45 text-cream hover:bg-crimson cursor-pointer transition-colors" aria-label="Xoá ảnh đang xem"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13"/></svg></button>
+
+          <div id="drop-hint" class="absolute inset-0 hidden place-items-center bg-crimson/75 backdrop-blur-sm text-cream font-700 text-xl">Thả ảnh vào đây để thêm</div>
+        </div>
+
+        <div id="carousel-dots" class="mt-5 flex justify-center items-center gap-2"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ GIÁ TRỊ ============ -->
+  <section id="gia-tri" class="py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8">
+      <div class="max-w-2xl">
+        <p class="reveal text-sm font-700 tracking-widest uppercase text-gold-deep">Giá trị cốt lõi</p>
+        <h2 class="reveal mt-3 font-display text-4xl sm:text-5xl font-700 leading-tight" data-delay="1">Điều giữ chúng tôi đi xa.</h2>
+      </div>
+      <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="reveal group rounded-3xl bg-paper p-7 ring-1 ring-ink/5 shadow-soft hover:shadow-lift hover:-translate-y-1.5 transition-all duration-300">
+          <div class="grid place-items-center w-12 h-12 rounded-2xl bg-crimson/10 text-crimson group-hover:bg-crimson group-hover:text-cream transition-colors duration-300"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg></div>
+          <h3 class="mt-5 font-display text-xl font-700">Chất lượng</h3>
+          <p class="mt-2 text-ink-soft leading-relaxed">Nguyên liệu tuyển chọn, quy trình chuẩn ở mọi điểm bán.</p>
+        </div>
+        <div class="reveal group rounded-3xl bg-paper p-7 ring-1 ring-ink/5 shadow-soft hover:shadow-lift hover:-translate-y-1.5 transition-all duration-300" data-delay="1">
+          <div class="grid place-items-center w-12 h-12 rounded-2xl bg-gold/15 text-gold-deep group-hover:bg-gold group-hover:text-ink transition-colors duration-300"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3C8 5 6 9 8 14s7 7 12 5c-1-1-1-3 0-5-3 1-6-1-7-4 1-3 0-5-1-7z"/></svg></div>
+          <h3 class="mt-5 font-display text-xl font-700">Hương vị</h3>
+          <p class="mt-2 text-ink-soft leading-relaxed">Mỗi thương hiệu một dấu ấn riêng, không trộn lẫn.</p>
+        </div>
+        <div class="reveal group rounded-3xl bg-paper p-7 ring-1 ring-ink/5 shadow-soft hover:shadow-lift hover:-translate-y-1.5 transition-all duration-300" data-delay="2">
+          <div class="grid place-items-center w-12 h-12 rounded-2xl bg-leaf/15 text-leaf group-hover:bg-leaf group-hover:text-cream transition-colors duration-300"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-7-10a4 4 0 017-2 4 4 0 017 2c0 5.65-7 10-7 10z"/></svg></div>
+          <h3 class="mt-5 font-display text-xl font-700">Tận tâm</h3>
+          <p class="mt-2 text-ink-soft leading-relaxed">Phục vụ bằng cái "tâm" — như tên gọi Tâm Hảo.</p>
+        </div>
+        <div class="reveal group rounded-3xl bg-paper p-7 ring-1 ring-ink/5 shadow-soft hover:shadow-lift hover:-translate-y-1.5 transition-all duration-300" data-delay="3">
+          <div class="grid place-items-center w-12 h-12 rounded-2xl bg-sky/10 text-sky group-hover:bg-sky group-hover:text-cream transition-colors duration-300"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/></svg></div>
+          <h3 class="mt-5 font-display text-xl font-700">Phát triển</h3>
+          <p class="mt-2 text-ink-soft leading-relaxed">Mở rộng bền vững, tạo cơ hội cho đội ngũ cùng lớn lên.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TIN TỨC ============ -->
+  <section id="tin-tuc" class="py-24 sm:py-32 bg-sand hidden">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8">
+      <p class="text-sm font-700 tracking-widest uppercase text-gold-deep">Tin tức</p>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-700 leading-tight">Bài viết mới nhất.</h2>
+      <div id="news-grid" class="mt-12 grid md:grid-cols-3 gap-6"></div>
+    </div>
+
+    <div id="news-modal" class="hidden fixed inset-0 z-[60] bg-black/60 items-center justify-center p-4">
+      <div class="bg-paper rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-lift">
+        <img id="news-modal-img" class="hidden w-full max-h-72 object-cover rounded-t-3xl" alt="" />
+        <div class="p-7">
+          <div class="flex items-start gap-3">
+            <div><p id="news-modal-date" class="text-xs text-ink-soft"></p><h3 id="news-modal-title" class="mt-1 font-display text-2xl font-700"></h3></div>
+            <button id="news-modal-close" class="ml-auto text-ink-soft hover:text-ink text-2xl leading-none cursor-pointer" aria-label="Đóng">✕</button>
+          </div>
+          <p id="news-modal-body" class="mt-4 text-ink-soft leading-relaxed whitespace-pre-wrap"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TUYỂN DỤNG ============ -->
+  <section id="tuyen-dung" class="py-24 sm:py-32 bg-sand">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-[1fr_1.1fr] gap-14 items-center">
+      <div>
+        <p class="reveal text-sm font-700 tracking-widest uppercase text-gold-deep">Tuyển dụng — Tụi mình tìm kiếm</p>
+        <h2 class="reveal mt-3 font-display text-4xl sm:text-5xl font-700 leading-tight" data-delay="1">Gia nhập đại gia đình Vinh Hoa.</h2>
+        <p class="reveal mt-4 inline-flex items-center gap-2 rounded-full bg-gold/15 text-gold-deep px-4 py-1.5 text-sm font-600" data-delay="1">
+          <span class="w-2 h-2 rounded-full bg-crimson"></span> Có mặt tại UFM Job Fair 2026 · TP.HCM, 23/5/2026
+        </p>
+        <p class="reveal mt-6 text-lg text-ink-soft leading-relaxed" data-delay="2">
+          Chúng tôi đang mở các vị trí thuộc khối <strong>HR</strong> và <strong>Marketing</strong> cho hệ sinh thái MAYCHA,
+          Hồng Trà Sữa Tâm Hảo, TràHũ và Gà Giòn Sốt Ba Cô Gái. Môi trường trẻ trung, lộ trình rõ ràng, thu nhập xứng đáng.
+        </p>
+        <a href="https://www.facebook.com/tuyendung.thinhthevinhhoa" target="_blank" rel="noopener" class="reveal mt-8 inline-flex items-center gap-2 rounded-full bg-crimson text-cream px-7 py-3.5 font-600 cursor-pointer shadow-soft hover:bg-crimson-deep hover:-translate-y-0.5 transition-all duration-300" data-delay="3">
+          Xem tin tuyển dụng trên Facebook
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <p class="reveal mt-5 text-ink-soft" data-delay="3">Nộp CV về: <a href="mailto:nhonnhh@maycha.com.vn" class="font-600 text-crimson underline decoration-crimson/30 hover:decoration-crimson cursor-pointer">nhonnhh@maycha.com.vn</a></p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-5">
+        <div class="reveal rounded-3xl bg-paper p-6 ring-1 ring-ink/5 shadow-soft">
+          <div class="flex items-center gap-2">
+            <span class="grid place-items-center w-9 h-9 rounded-xl bg-crimson/10 text-crimson"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0114 0"/></svg></span>
+            <h3 class="font-display text-lg font-700">HR</h3>
+          </div>
+          <ul class="mt-4 space-y-2 text-ink-soft">
+            <li class="flex gap-2"><span class="text-gold-deep">•</span> Talent Acquisition Executive <span class="text-ink-soft/70">(Hà Nội)</span></li>
+          </ul>
+        </div>
+        <div class="reveal rounded-3xl bg-paper p-6 ring-1 ring-ink/5 shadow-soft" data-delay="1">
+          <div class="flex items-center gap-2">
+            <span class="grid place-items-center w-9 h-9 rounded-xl bg-gold/15 text-gold-deep"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 13z"/><path d="M11.6 16.8a3 3 0 11-5.8-1.6"/></svg></span>
+            <h3 class="font-display text-lg font-700">Marketing</h3>
+          </div>
+          <ul class="mt-4 space-y-2 text-ink-soft">
+            <li class="flex gap-2"><span class="text-gold-deep">•</span> Social Media &amp; TikTok Content Executive</li>
+            <li class="flex gap-2"><span class="text-gold-deep">•</span> Senior Marcom Executive</li>
+            <li class="flex gap-2"><span class="text-gold-deep">•</span> Trade Online &amp; Partnership Executive</li>
+            <li class="flex gap-2"><span class="text-gold-deep">•</span> Trade Offline Marketing Executive</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LIÊN HỆ / FOOTER ============ -->
+  <footer id="lien-he" class="bg-crimson-deep text-cream/90">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8 py-20">
+      <div class="grid md:grid-cols-4 gap-10">
+        <div class="md:col-span-2 max-w-sm">
+          <div class="flex items-center gap-3">
+            <img src="images/logos/ttvh.jpg" alt="Thịnh Thế Vinh Hoa" class="h-16 w-auto rounded-2xl" />
+            <span class="font-display text-xl font-700 text-cream">Thịnh Thế Vinh Hoa</span>
+          </div>
+          <p class="mt-4 text-cream/75 leading-relaxed">Hệ sinh thái F&amp;B đa thương hiệu. <span class="italic">Vững thời · Sáng vận · Đẹp danh.</span></p>
+          <div class="mt-5 space-y-1.5 text-cream/80">
+            <p><span class="text-cream/55">Địa chỉ:</span> TP. Hồ Chí Minh · <span class="badge-todo">điền địa chỉ chi tiết</span></p>
+            <p><span class="text-cream/55">Hotline:</span> <span class="badge-todo">điền số điện thoại</span></p>
+            <p><span class="text-cream/55">Email tuyển dụng:</span> <a href="mailto:nhonnhh@maycha.com.vn" class="underline decoration-cream/30 hover:decoration-cream cursor-pointer">nhonnhh@maycha.com.vn</a></p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-display text-lg font-700 text-cream">Thương hiệu</h3>
+          <ul class="mt-3 space-y-2">
+            <li><a href="https://www.facebook.com/maycha38" target="_blank" rel="noopener" class="text-cream/75 hover:text-cream transition-colors cursor-pointer">Maycha</a></li>
+            <li><a href="https://www.facebook.com/hongtrasuatamhao" target="_blank" rel="noopener" class="text-cream/75 hover:text-cream transition-colors cursor-pointer">Hồng Trà Sữa Tâm Hảo</a></li>
+            <li><a href="https://www.facebook.com/gagionsot.bacogai" target="_blank" rel="noopener" class="text-cream/75 hover:text-cream transition-colors cursor-pointer">Gà Giòn Sốt Ba Cô Gái</a></li>
+            <li><a href="https://www.facebook.com/trahu.damhuhon" target="_blank" rel="noopener" class="text-cream/75 hover:text-cream transition-colors cursor-pointer">TràHú — Đậm Hú Hồn</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-display text-lg font-700 text-cream">Kết nối</h3>
+          <ul class="mt-3 space-y-2">
+            <li><a href="https://www.facebook.com/tuyendung.thinhthevinhhoa" target="_blank" rel="noopener" class="text-cream/75 hover:text-cream transition-colors cursor-pointer">Fanpage tuyển dụng</a></li>
+            <li><a href="#thuong-hieu" class="text-cream/75 hover:text-cream transition-colors cursor-pointer">Hệ thống thương hiệu</a></li>
+            <li><a href="#tuyen-dung" class="text-cream/75 hover:text-cream transition-colors cursor-pointer">Cơ hội nghề nghiệp</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-14 pt-8 border-t border-cream/15 flex flex-col sm:flex-row justify-between gap-4 text-sm text-cream/60">
+        <p>© 2026 Thịnh Thế Vinh Hoa. Bản quyền thuộc về công ty.</p>
+        <p>TP. Hồ Chí Minh, Việt Nam</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var reveals = document.querySelectorAll('.reveal');
+      if (reduce || !('IntersectionObserver' in window)) {
+        reveals.forEach(function(el){ el.classList.add('is-visible'); });
+      } else {
+        var io = new IntersectionObserver(function(entries){
+          entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+        }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
+        reveals.forEach(function(el){ io.observe(el); });
+      }
+
+      var nav = document.getElementById('nav');
+      function onScroll(){
+        if (window.scrollY > 24){
+          nav.classList.add('shrink','py-3','bg-cream/85','backdrop-blur-md');
+          nav.classList.remove('py-5');
+        } else {
+          nav.classList.remove('shrink','py-3','bg-cream/85','backdrop-blur-md');
+          nav.classList.add('py-5');
+        }
+      }
+      onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+
+      function animateCount(el){
+        var target = parseFloat(el.getAttribute('data-target'));
+        if (reduce){ el.textContent = target; return; }
+        var start = performance.now(), dur = 1300;
+        function tick(now){
+          var p = Math.min((now-start)/dur,1), eased = 1-Math.pow(1-p,3);
+          el.textContent = Math.round(target*eased);
+          if (p<1) requestAnimationFrame(tick); else el.textContent = target;
+        }
+        requestAnimationFrame(tick);
+      }
+      var counters = document.querySelectorAll('.count');
+      if (!('IntersectionObserver' in window)) { counters.forEach(animateCount); }
+      else {
+        var cio = new IntersectionObserver(function(entries){
+          entries.forEach(function(e){ if(e.isIntersecting){ animateCount(e.target); cio.unobserve(e.target); } });
+        }, { threshold:0.6 });
+        counters.forEach(function(el){ cio.observe(el); });
+      }
+    })();
+  </script>
+  <!-- ============ CHAT WIDGET ============ -->
+  <div id="chat-widget" class="fixed bottom-5 right-5 z-[70] flex flex-col items-end gap-3">
+    <div id="chat-panel" class="w-[370px] max-w-[calc(100vw-2.5rem)] rounded-3xl bg-paper shadow-lift ring-1 ring-ink/10 overflow-hidden flex flex-col" style="height:540px;max-height:calc(100vh-7rem)">
+      <!-- header -->
+      <div class="bg-[#0068FF] text-white px-4 py-3 flex items-center gap-3 shrink-0">
+        <span class="grid place-items-center w-10 h-10 rounded-full bg-white overflow-hidden shrink-0">
+          <img src="images/logos/ttvh.jpg" alt="" class="w-full h-full object-cover" />
+        </span>
+        <div class="leading-tight min-w-0">
+          <p class="font-700 truncate">Trợ lý Thịnh Thế Vinh Hoa</p>
+          <p class="text-xs text-white/85 flex items-center gap-1.5">
+            <span id="chat-status-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span id="chat-status-text">Tự động trả lời</span>
+          </p>
+        </div>
+        <button id="chat-settings-btn" class="ml-auto text-white/85 hover:text-white cursor-pointer" aria-label="Cài đặt">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 00-2.3-1.3L13.7 2h-3.4l-.3 2.5A7 7 0 007.7 5.8l-2.3-1-2 3.4 2 1.5A7 7 0 005.3 12c0 .4 0 .9.1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 002.3 1.3l.3 2.5h3.4l.3-2.5a7 7 0 002.3-1.3l2.3 1 2-3.4-2-1.5c.1-.4.1-.9.1-1.3z"/></svg>
+        </button>
+        <button id="chat-close" class="text-white/85 hover:text-white cursor-pointer" aria-label="Đóng khung chat">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <!-- human-takeover banner -->
+      <div id="chat-human-banner" class="hidden bg-amber/15 text-amber-deep text-xs font-600 px-4 py-2 text-center shrink-0">
+        Nhân viên đang trực tiếp hỗ trợ bạn — trợ lý tự động tạm dừng.
+      </div>
+
+      <!-- settings drawer -->
+      <div id="chat-settings" class="hidden border-b border-ink/10 bg-cream px-4 py-3 text-sm shrink-0">
+        <p class="flex items-center gap-2 font-600">
+          <span id="chat-conn-dot" class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+          <span id="chat-conn-text" class="text-ink-soft">Đang kết nối máy chủ…</span>
+        </p>
+        <p class="mt-1 text-xs text-ink-soft">Trợ lý AI Gemini xử lý phía máy chủ (an toàn, không lộ khoá).</p>
+        <a href="agent.html" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-1.5 text-xs font-600 text-[#0068FF] hover:underline cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          Mở bảng nhân viên (trả lời trực tiếp)
+        </a>
+      </div>
+
+      <!-- messages -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-cream/40"></div>
+
+      <!-- typing indicator -->
+      <div id="chat-typing" class="hidden px-4 pb-1.5 text-xs text-ink-soft items-center gap-1">
+        <span id="chat-typing-text">Đang trả lời, xin chờ giây lát</span>
+        <span class="typing-dot">.</span><span class="typing-dot">.</span><span class="typing-dot">.</span>
+      </div>
+
+      <!-- input -->
+      <form id="chat-form" class="p-3 border-t border-ink/10 flex items-end gap-2 shrink-0">
+        <textarea id="chat-input" rows="1" placeholder="Nhập tin nhắn…" autocomplete="off"
+          class="flex-1 resize-none max-h-28 rounded-2xl border border-ink/15 px-3.5 py-2.5 text-sm outline-none focus:border-[#0068FF] leading-relaxed"></textarea>
+        <button type="submit" id="chat-send" class="grid place-items-center w-11 h-11 rounded-full bg-[#0068FF] text-white shrink-0 cursor-pointer hover:brightness-110 transition disabled:opacity-40" aria-label="Gửi">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </form>
+      <a id="chat-zalo" href="https://zalo.me/" target="_blank" rel="noopener" class="block text-center text-xs text-[#0068FF] hover:underline pb-2 cursor-pointer">hoặc nhắn trực tiếp qua Zalo</a>
+    </div>
+
+    <button id="chat-toggle" class="chat-pulse relative grid place-items-center w-16 h-16 rounded-full bg-[#0068FF] text-white shadow-lift cursor-pointer hover:scale-105 transition-transform duration-300" aria-label="Mở trợ lý chat" aria-expanded="false">
+      <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 01-11.7 7.1L4 20l1.4-4.1A8 8 0 1121 11.5z"/><path d="M8.5 11h7M8.5 14h4"/></svg>
+      <span id="chat-badge" class="hidden absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 grid place-items-center rounded-full bg-crimson text-white text-[11px] font-700 ring-2 ring-paper">1</span>
+    </button>
+  </div>
+
+  <!-- ============ KHOẢNH KHẮC (GALLERY) JS ============ -->
+  <script>
+    (function(){
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var section = document.getElementById('hinh-anh');
+      var stage = document.getElementById('carousel');
+      var track = document.getElementById('carousel-track');
+      var dotsEl = document.getElementById('carousel-dots');
+      var prevBtn = document.getElementById('carousel-prev');
+      var nextBtn = document.getElementById('carousel-next');
+      if (!stage) return;
+      // bỏ các phần của bản cũ (upload/xoá/empty) — giờ quản lý ở dashboard
+      ['carousel-empty','carousel-del','drop-hint'].forEach(function(id){ var el = document.getElementById(id); if (el) el.remove(); });
+
+      var slides = [], idx = 0, timer = null;
+      function dotClass(on){ return 'h-2.5 rounded-full transition-all cursor-pointer ' + (on ? 'w-6 bg-crimson' : 'w-2.5 bg-ink/25 hover:bg-ink/40'); }
+
+      function build(){
+        track.innerHTML = ''; dotsEl.innerHTML = '';
+        slides.forEach(function(s, i){
+          var slide = document.createElement('div'); slide.className = 'slide' + (i === 0 ? ' active' : '');
+          var bg = document.createElement('div'); bg.className = 'slide-bg'; bg.style.backgroundImage = 'url(' + s.src + ')';
+          var img = document.createElement('img'); img.className = 'slide-img'; img.src = s.src; img.alt = s.caption || ('Khoảnh khắc ' + (i + 1)); img.loading = 'lazy';
+          slide.appendChild(bg); slide.appendChild(img); track.appendChild(slide);
+          var d = document.createElement('button'); d.className = dotClass(i === 0); d.setAttribute('aria-label', 'Đến ảnh ' + (i + 1));
+          d.addEventListener('click', function(){ go(i); }); dotsEl.appendChild(d);
+        });
+        var many = slides.length > 1;
+        prevBtn.style.display = many ? 'grid' : 'none';
+        nextBtn.style.display = many ? 'grid' : 'none';
+      }
+      function go(i){
+        if (!slides.length) return;
+        idx = (i + slides.length) % slides.length;
+        Array.prototype.forEach.call(track.children, function(c, k){ c.classList.toggle('active', k === idx); });
+        Array.prototype.forEach.call(dotsEl.children, function(d, k){ d.className = dotClass(k === idx); });
+        restart();
+      }
+      function next(){ go(idx + 1); }
+      function prev(){ go(idx - 1); }
+      function restart(){ if (timer) clearInterval(timer); if (reduce || slides.length < 2) return; timer = setInterval(next, 5000); }
+
+      prevBtn.addEventListener('click', prev);
+      nextBtn.addEventListener('click', next);
+      stage.addEventListener('keydown', function(e){ if (e.key === 'ArrowLeft') prev(); else if (e.key === 'ArrowRight') next(); });
+      stage.addEventListener('mouseenter', function(){ if (timer) clearInterval(timer); });
+      stage.addEventListener('mouseleave', restart);
+      var sx = null;
+      stage.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, { passive: true });
+      stage.addEventListener('touchend', function(e){ if (sx === null) return; var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 40){ dx < 0 ? next() : prev(); } sx = null; });
+
+      fetch('/api/gallery').then(function(r){ return r.json(); }).then(function(j){
+        slides = (j.items || []);
+        if (!slides.length) { if (section) section.style.display = 'none'; return; }
+        build(); restart();
+      }).catch(function(){ if (section) section.style.display = 'none'; });
+    })();
+  </script>
+
+  <!-- ============ HERO CAROUSEL JS ============ -->
+  <script>
+    (function(){
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var imgs = [];
+      var stage = document.getElementById('hero-carousel');
+      if (!stage) return;
+      var track = document.getElementById('hero-track');
+      var dotsEl = document.getElementById('hero-dots');
+      var prevBtn = document.getElementById('hero-prev');
+      var nextBtn = document.getElementById('hero-next');
+      var idx = 0, timer = null;
+
+      function dotClass(on){ return 'h-2 rounded-full transition-all cursor-pointer ' + (on ? 'w-6 bg-cream' : 'w-2 bg-cream/45 hover:bg-cream/70'); }
+
+      function build(){
+        track.innerHTML = ''; dotsEl.innerHTML = '';
+        imgs.forEach(function(src, i){
+          var s = document.createElement('div'); s.className = 'slide' + (i === 0 ? ' active' : '');
+          var im = document.createElement('img'); im.className = 'slide-img'; im.src = src; im.alt = 'Hình ảnh Thịnh Thế Vinh Hoa ' + (i + 1); im.loading = i === 0 ? 'eager' : 'lazy';
+          s.appendChild(im); track.appendChild(s);
+          var d = document.createElement('button'); d.className = dotClass(i === 0); d.setAttribute('aria-label', 'Ảnh ' + (i + 1));
+          d.addEventListener('click', function(){ go(i); }); dotsEl.appendChild(d);
+        });
+      }
+
+      function go(i){
+        idx = (i + imgs.length) % imgs.length;
+        Array.prototype.forEach.call(track.children, function(c, k){ c.classList.toggle('active', k === idx); });
+        Array.prototype.forEach.call(dotsEl.children, function(d, k){ d.className = dotClass(k === idx); });
+        restart();
+      }
+      function next(){ go(idx + 1); }
+      function prev(){ go(idx - 1); }
+      function restart(){ if (timer) clearInterval(timer); if (reduce) return; timer = setInterval(next, 4500); }
+
+      prevBtn.addEventListener('click', prev);
+      nextBtn.addEventListener('click', next);
+      stage.addEventListener('keydown', function(e){ if (e.key === 'ArrowLeft') prev(); else if (e.key === 'ArrowRight') next(); });
+      stage.addEventListener('mouseenter', function(){ if (timer) clearInterval(timer); });
+      stage.addEventListener('mouseleave', restart);
+      var sx = null;
+      stage.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, { passive: true });
+      stage.addEventListener('touchend', function(e){ if (sx === null) return; var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 40){ dx < 0 ? next() : prev(); } sx = null; });
+
+      var fallback = ['images/1.jpg','images/2.jpg','images/3.jpg','images/4.jpg'];
+      fetch('/api/carousel').then(function(r){ return r.json(); }).then(function(j){
+        imgs = (j.items || []).map(function(x){ return x.src; });
+        if (!imgs.length) imgs = fallback;
+        build(); restart();
+      }).catch(function(){ imgs = fallback; build(); restart(); });
+    })();
+  </script>
+
+  <!-- ============ TIN TỨC JS ============ -->
+  <script>
+    (function(){
+      var sec = document.getElementById('tin-tuc'), grid = document.getElementById('news-grid');
+      if (!sec) return;
+      function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      var modal = document.getElementById('news-modal');
+      function closeModal(){ modal.classList.add('hidden'); modal.classList.remove('flex'); }
+      document.getElementById('news-modal-close').addEventListener('click', closeModal);
+      modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+      function openNews(id){
+        var p = (window._news||[]).find(function(x){ return x.id === id; }); if (!p) return;
+        document.getElementById('news-modal-title').textContent = p.title;
+        document.getElementById('news-modal-date').textContent = new Date(p.createdAt).toLocaleDateString('vi-VN');
+        var img = document.getElementById('news-modal-img');
+        if (p.image){ img.src = p.image; img.classList.remove('hidden'); } else img.classList.add('hidden');
+        document.getElementById('news-modal-body').textContent = p.body;
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+      }
+      fetch('/api/posts').then(function(r){ return r.json(); }).then(function(j){
+        var posts = j.posts || []; if (!posts.length) return;
+        window._news = posts;
+        sec.classList.remove('hidden');
+        grid.innerHTML = posts.slice(0, 6).map(function(p){
+          var d = new Date(p.createdAt).toLocaleDateString('vi-VN');
+          return '<article data-id="' + p.id + '" class="news-card cursor-pointer rounded-3xl bg-paper ring-1 ring-ink/5 shadow-soft overflow-hidden hover:shadow-lift hover:-translate-y-1 transition-all duration-300">'
+            + (p.image ? '<div class="h-44 bg-cream overflow-hidden"><img src="' + esc(p.image) + '" class="w-full h-full object-cover" loading="lazy" alt=""></div>' : '')
+            + '<div class="p-6"><p class="text-xs text-ink-soft">' + d + '</p><h3 class="mt-1 font-display text-xl font-700 leading-snug">' + esc(p.title) + '</h3>'
+            + '<p class="mt-2 text-ink-soft line-clamp-3 whitespace-pre-wrap">' + esc(p.body) + '</p>'
+            + '<span class="mt-3 inline-block text-crimson font-600 text-sm">Đọc tiếp →</span></div></article>';
+        }).join('');
+        grid.querySelectorAll('.news-card').forEach(function(c){ c.addEventListener('click', function(){ openNews(c.getAttribute('data-id')); }); });
+      }).catch(function(){});
+    })();
+  </script>
+
+  <!-- ============ CHATBOT ============ -->
+  <script src="chat.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Chạy Postgres nhanh cho phát triển:
+#   docker compose up -d
+# Rồi đặt trong .env:
+#   DATABASE_URL=postgres://ttvh:ttvh@localhost:5432/ttvh
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ttvh-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ttvh
+      POSTGRES_PASSWORD: ttvh
+      POSTGRES_DB: ttvh
+    ports:
+      - "5432:5432"
+    volumes:
+      - ttvh_pgdata:/var/lib/postgresql/data
+
+volumes:
+  ttvh_pgdata:
