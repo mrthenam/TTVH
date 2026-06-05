@@ -14,7 +14,8 @@ ENV NODE_ENV=production
 # PORT do nền tảng (Railway/Render) tự cấp; mặc định 8787 khi chạy local
 EXPOSE 8787
 
-# Thư mục ảnh upload (gắn volume vào đây để giữ ảnh qua các lần deploy)
-VOLUME ["/app/images/uploads"]
+# Lưu ý: để giữ ảnh upload qua các lần deploy, dùng "Railway Volumes"
+# (Settings → Add Volume → mount path: /app/images/uploads).
+# KHÔNG dùng lệnh VOLUME ở đây vì Railway không hỗ trợ.
 
 CMD ["node", "server/server.js"]
