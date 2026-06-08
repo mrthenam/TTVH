@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,19 +11,58 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
-    tailwind.config = { theme: { extend: {
-      colors: { cream:'#FBF7F0', sand:'#F3EADb', paper:'#FFFFFF', ink:'#1B1714', 'ink-soft':'#6A5F54', gold:'#C19A2B', 'gold-deep':'#937218', crimson:'#A8131C', 'crimson-deep':'#7C0E15' },
-      fontFamily: { display:['"Playfair Display"','serif'], sans:['"Be Vietnam Pro"','system-ui','sans-serif'] },
-      boxShadow: { soft:'0 14px 40px -18px rgba(124,14,21,0.20)', lift:'0 26px 60px -22px rgba(124,14,21,0.30)' }
-    } } };
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FBF7F0',
+            sand: '#F3EADb',
+            paper: '#FFFFFF',
+            ink: '#1B1714',
+            'ink-soft': '#6A5F54',
+            gold: '#C19A2B',
+            'gold-deep': '#937218',
+            crimson: '#A8131C',
+            'crimson-deep': '#7C0E15'
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            sans: ['"Be Vietnam Pro"', 'system-ui', 'sans-serif']
+          },
+          boxShadow: {
+            soft: '0 14px 40px -18px rgba(124,14,21,0.20)',
+            lift: '0 26px 60px -22px rgba(124,14,21,0.30)'
+          }
+        }
+      }
+    };
   </script>
   <style>
-    body{background:#FBF7F0}
-    ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:9px}
-    .nav-btn.active{background:#A8131C;color:#FBF7F0}
-    .nav-btn.active .nav-ico{color:#FBF7F0}
+    body {
+      background: #FBF7F0
+    }
+
+    ::-webkit-scrollbar {
+      width: 9px;
+      height: 9px
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, .15);
+      border-radius: 9px
+    }
+
+    .nav-btn.active {
+      background: #A8131C;
+      color: #FBF7F0
+    }
+
+    .nav-btn.active .nav-ico {
+      color: #FBF7F0
+    }
   </style>
 </head>
+
 <body class="font-sans text-ink">
 
   <!-- LOGIN -->
@@ -30,7 +70,10 @@
     <form id="login-form" class="w-full max-w-sm rounded-3xl bg-paper ring-1 ring-ink/10 shadow-lift p-7 space-y-4">
       <div class="flex items-center gap-3">
         <img src="images/logos/ttvh.jpg" alt="Thịnh Thế Vinh Hoa" class="h-12 w-auto rounded-xl" />
-        <div><p class="font-display text-xl font-700 leading-tight">Thịnh Thế Vinh Hoa</p><p class="text-xs tracking-widest uppercase text-ink-soft">Trang quản trị</p></div>
+        <div>
+          <p class="font-display text-xl font-700 leading-tight">Thịnh Thế Vinh Hoa</p>
+          <p class="text-xs tracking-widest uppercase text-ink-soft">Trang quản trị</p>
+        </div>
       </div>
       <input id="li-user" placeholder="Tên đăng nhập" autocomplete="username" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
       <input id="li-pass" type="password" placeholder="Mật khẩu" autocomplete="current-password" class="w-full rounded-xl border border-ink/15 px-3.5 py-2.5 outline-none focus:border-crimson" />
@@ -46,7 +89,10 @@
     <aside class="bg-crimson-deep text-cream/90 flex flex-col">
       <div class="flex items-center gap-3 px-5 py-5 border-b border-cream/15">
         <img src="images/logos/ttvh.jpg" alt="" class="h-11 w-auto rounded-xl bg-cream/95 p-0.5" />
-        <div class="leading-tight"><p class="font-display font-700 text-cream">Thịnh Thế Vinh Hoa</p><p class="text-[11px] tracking-widest uppercase text-cream/60">Dashboard</p></div>
+        <div class="leading-tight">
+          <p class="font-display font-700 text-cream">Thịnh Thế Vinh Hoa</p>
+          <p class="text-[11px] tracking-widest uppercase text-cream/60">Dashboard</p>
+        </div>
       </div>
       <nav class="flex-1 p-3 space-y-1 text-sm">
         <button data-go="overview" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">▦</span> Tổng quan</button>
@@ -55,7 +101,7 @@
         <button data-go="carousel" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🖼️</span> Carousel</button>
         <button data-go="gallery" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📸</span> Khoảnh khắc</button>
         <button data-go="jobposts" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📢</span> Tin tuyển dụng</button>
-        <button data-go="jobs" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🤖</span> Data chatbot TD</button>
+        <button data-go="jobs" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🤖</span> Data tuyển dụng</button>
         <button data-go="staff" id="nav-staff" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">👥</span> Nhân viên</button>
         <button data-go="account" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">⚙️</span> Tài khoản</button>
       </nav>
@@ -79,10 +125,22 @@
         <!-- OVERVIEW -->
         <section data-panel="overview" class="h-full overflow-y-auto p-6">
           <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5"><p class="text-sm text-ink-soft">Hội thoại</p><p id="ov-conv" class="font-display text-4xl font-700 text-crimson">0</p></div>
-            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5"><p class="text-sm text-ink-soft">Bài đăng</p><p id="ov-posts" class="font-display text-4xl font-700 text-crimson">0</p></div>
-            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5"><p class="text-sm text-ink-soft">Ảnh carousel</p><p id="ov-carousel" class="font-display text-4xl font-700 text-crimson">0</p></div>
-            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5"><p class="text-sm text-ink-soft">NV trực tuyến</p><p id="ov-online" class="font-display text-4xl font-700 text-crimson">0</p></div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5">
+              <p class="text-sm text-ink-soft">Hội thoại</p>
+              <p id="ov-conv" class="font-display text-4xl font-700 text-crimson">0</p>
+            </div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5">
+              <p class="text-sm text-ink-soft">Bài đăng</p>
+              <p id="ov-posts" class="font-display text-4xl font-700 text-crimson">0</p>
+            </div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5">
+              <p class="text-sm text-ink-soft">Ảnh carousel</p>
+              <p id="ov-carousel" class="font-display text-4xl font-700 text-crimson">0</p>
+            </div>
+            <div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-5">
+              <p class="text-sm text-ink-soft">NV trực tuyến</p>
+              <p id="ov-online" class="font-display text-4xl font-700 text-crimson">0</p>
+            </div>
           </div>
           <div class="mt-6 rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-6">
             <p class="font-display text-lg font-700">Xin chào 👋</p>
@@ -101,7 +159,10 @@
             </div>
             <div class="flex flex-col min-w-0">
               <div id="conv-header" class="hidden items-center gap-3 px-5 py-3 border-b border-ink/10 bg-paper">
-                <div class="min-w-0"><p id="conv-title" class="font-600 truncate">Khách</p><p id="conv-mode" class="text-xs"></p></div>
+                <div class="min-w-0">
+                  <p id="conv-title" class="font-600 truncate">Khách</p>
+                  <p id="conv-mode" class="text-xs"></p>
+                </div>
                 <div class="ml-auto flex gap-2">
                   <button id="btn-takeover" class="rounded-lg bg-gold text-ink px-3 py-1.5 text-sm font-600 hover:brightness-105">Tiếp nhận</button>
                   <button id="btn-release" class="rounded-lg bg-ink/10 px-3 py-1.5 text-sm font-600 hover:bg-ink/20">Trả về bot</button>
@@ -240,11 +301,26 @@
           <div id="job-cards" class="hidden">
             <!-- thẻ số liệu -->
             <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700" id="job-stores">0</div><div class="text-sm text-ink-soft">Cửa hàng</div></div>
-              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700 text-crimson" id="job-open">0</div><div class="text-sm text-ink-soft">Đang tuyển</div></div>
-              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700 text-gold-deep" id="job-need">0</div><div class="text-sm text-ink-soft">Tổng cần tuyển</div></div>
-              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700" id="job-geo">0</div><div class="text-sm text-ink-soft">Có toạ độ</div></div>
-              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4"><div class="text-2xl font-700" id="job-pos">0</div><div class="text-sm text-ink-soft">Vị trí có mô tả</div></div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="text-2xl font-700" id="job-stores">0</div>
+                <div class="text-sm text-ink-soft">Cửa hàng</div>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="text-2xl font-700 text-crimson" id="job-open">0</div>
+                <div class="text-sm text-ink-soft">Đang tuyển</div>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="text-2xl font-700 text-gold-deep" id="job-need">0</div>
+                <div class="text-sm text-ink-soft">Tổng cần tuyển</div>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="text-2xl font-700" id="job-geo">0</div>
+                <div class="text-sm text-ink-soft">Có toạ độ</div>
+              </div>
+              <div class="rounded-2xl bg-white ring-1 ring-ink/10 p-4">
+                <div class="text-2xl font-700" id="job-pos">0</div>
+                <div class="text-sm text-ink-soft">Vị trí có mô tả</div>
+              </div>
             </div>
 
             <!-- biểu đồ -->
@@ -281,9 +357,18 @@
                 <table class="w-full text-sm border-collapse">
                   <thead class="sticky top-0 bg-sand text-ink-soft text-xs z-10">
                     <tr>
-                      <th class="p-2 text-left">#</th><th class="p-2 text-left">Mã</th><th class="p-2 text-left">Brand</th>
-                      <th class="p-2 text-left min-w-[10rem]">Tên</th><th class="p-2 text-left min-w-[16rem]">Địa chỉ</th>
-                      <th class="p-2">SM</th><th class="p-2">SL</th><th class="p-2">ASF</th><th class="p-2">Staff</th><th class="p-2">StaffFT</th><th class="p-2">CSS</th><th class="p-2"></th>
+                      <th class="p-2 text-left">#</th>
+                      <th class="p-2 text-left">Mã</th>
+                      <th class="p-2 text-left">Brand</th>
+                      <th class="p-2 text-left min-w-[10rem]">Tên</th>
+                      <th class="p-2 text-left min-w-[16rem]">Địa chỉ</th>
+                      <th class="p-2">SM</th>
+                      <th class="p-2">SL</th>
+                      <th class="p-2">ASF</th>
+                      <th class="p-2">Staff</th>
+                      <th class="p-2">StaffFT</th>
+                      <th class="p-2">CSS</th>
+                      <th class="p-2"></th>
                     </tr>
                   </thead>
                   <tbody id="job-tbody"></tbody>
@@ -308,7 +393,8 @@
                 <input id="ag-name" placeholder="Tên hiển thị" class="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm outline-none focus:border-crimson" />
                 <input id="ag-pass" type="text" placeholder="Mật khẩu (≥6)" class="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm outline-none focus:border-crimson" />
                 <select id="ag-role" class="w-full rounded-xl border border-ink/15 px-3 py-2 text-sm outline-none focus:border-crimson">
-                  <option value="agent">Nhân viên</option><option value="admin">Quản trị</option>
+                  <option value="agent">Nhân viên</option>
+                  <option value="admin">Quản trị</option>
                 </select>
                 <button class="rounded-full bg-crimson text-cream px-5 py-2.5 text-sm font-600 hover:bg-crimson-deep">Tạo nhân viên</button>
                 <p id="add-msg" class="text-sm"></p>
@@ -336,36 +422,112 @@
   </div>
 
   <script>
-    var $ = function (id) { return document.getElementById(id); };
-    var token = localStorage.getItem('ttvh_agent_jwt') || '', me = '', meRole = 'agent';
-    var convs = {}, current = null, ws = null, retry = 0, activePanel = 'overview';
-    function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
-    function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-    function timeStr(ts) { try { return new Date(ts).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }); } catch (e) { return ''; } }
+    var $ = function(id) {
+      return document.getElementById(id);
+    };
+    var token = localStorage.getItem('ttvh_agent_jwt') || '',
+      me = '',
+      meRole = 'agent';
+    var convs = {},
+      current = null,
+      ws = null,
+      retry = 0,
+      activePanel = 'overview';
+
+    function authHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      };
+    }
+
+    function esc(s) {
+      return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function timeStr(ts) {
+      try {
+        return new Date(ts).toLocaleString('vi-VN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          day: '2-digit',
+          month: '2-digit'
+        });
+      } catch (e) {
+        return '';
+      }
+    }
 
     /* ---------- login ---------- */
-    function showLogin(msg) { $('login').style.display = 'grid'; $('app').classList.add('hidden'); if (msg) { $('li-err').textContent = msg; $('li-err').classList.remove('hidden'); } }
-    function showApp() { $('login').style.display = 'none'; $('app').classList.remove('hidden'); }
-    $('login-form').addEventListener('submit', async function (e) {
-      e.preventDefault(); $('li-err').classList.add('hidden');
+    function showLogin(msg) {
+      $('login').style.display = 'grid';
+      $('app').classList.add('hidden');
+      if (msg) {
+        $('li-err').textContent = msg;
+        $('li-err').classList.remove('hidden');
+      }
+    }
+
+    function showApp() {
+      $('login').style.display = 'none';
+      $('app').classList.remove('hidden');
+    }
+    $('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      $('li-err').classList.add('hidden');
       try {
-        var r = await fetch('/api/agent/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: $('li-user').value.trim(), password: $('li-pass').value }) });
+        var r = await fetch('/api/agent/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: $('li-user').value.trim(),
+            password: $('li-pass').value
+          })
+        });
         var j = await r.json();
         if (!r.ok) return showLogin(j.error || 'Đăng nhập thất bại');
-        token = j.token; me = j.name; meRole = j.role || 'agent';
+        token = j.token;
+        me = j.name;
+        meRole = j.role || 'agent';
         localStorage.setItem('ttvh_agent_jwt', token);
         $('nav-staff').style.display = meRole === 'admin' ? '' : 'none';
         startApp();
-      } catch (err) { showLogin('Không kết nối được máy chủ'); }
+      } catch (err) {
+        showLogin('Không kết nối được máy chủ');
+      }
     });
-    $('logout').addEventListener('click', function () { localStorage.removeItem('ttvh_agent_jwt'); token = ''; try { ws && ws.close(); } catch (e) {} showLogin(); });
+    $('logout').addEventListener('click', function() {
+      localStorage.removeItem('ttvh_agent_jwt');
+      token = '';
+      try {
+        ws && ws.close();
+      } catch (e) {}
+      showLogin();
+    });
 
     /* ---------- navigation ---------- */
-    var titles = { overview: 'Tổng quan', chat: 'Hội thoại', posts: 'Bài đăng', carousel: 'Carousel', gallery: 'Khoảnh khắc', jobposts: 'Tin tuyển dụng', jobs: 'Dữ liệu chatbot tuyển dụng', staff: 'Nhân viên', account: 'Tài khoản' };
+    var titles = {
+      overview: 'Tổng quan',
+      chat: 'Hội thoại',
+      posts: 'Bài đăng',
+      carousel: 'Carousel',
+      gallery: 'Khoảnh khắc',
+      jobposts: 'Tin tuyển dụng',
+      jobs: 'Dữ liệu chatbot tuyển dụng',
+      staff: 'Nhân viên',
+      account: 'Tài khoản'
+    };
+
     function go(name) {
       activePanel = name;
-      document.querySelectorAll('[data-panel]').forEach(function (s) { s.classList.toggle('hidden', s.getAttribute('data-panel') !== name); });
-      document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-go') === name); });
+      document.querySelectorAll('[data-panel]').forEach(function(s) {
+        s.classList.toggle('hidden', s.getAttribute('data-panel') !== name);
+      });
+      document.querySelectorAll('.nav-btn').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-go') === name);
+      });
       $('title').textContent = titles[name] || '';
       if (name === 'chat') $('chat-dot').classList.add('hidden');
       if (name === 'posts') loadPosts();
@@ -376,84 +538,194 @@
       if (name === 'staff') loadAgents();
       if (name === 'overview') loadOverview();
     }
-    document.querySelectorAll('.nav-btn').forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-go')); }); });
+    document.querySelectorAll('.nav-btn').forEach(function(b) {
+      b.addEventListener('click', function() {
+        go(b.getAttribute('data-go'));
+      });
+    });
 
     /* ---------- overview ---------- */
     async function loadOverview() {
       $('ov-conv').textContent = Object.keys(convs).length;
-      try { var p = await (await fetch('/api/posts/all', { headers: authHeaders() })).json(); $('ov-posts').textContent = (p.posts || []).length; } catch (e) {}
-      try { var c = await (await fetch('/api/carousel')).json(); $('ov-carousel').textContent = (c.items || []).length; } catch (e) {}
+      try {
+        var p = await (await fetch('/api/posts/all', {
+          headers: authHeaders()
+        })).json();
+        $('ov-posts').textContent = (p.posts || []).length;
+      } catch (e) {}
+      try {
+        var c = await (await fetch('/api/carousel')).json();
+        $('ov-carousel').textContent = (c.items || []).length;
+      } catch (e) {}
     }
 
     /* ---------- image upload ---------- */
-    function fileToDataUrl(f) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(f); }); }
+    function fileToDataUrl(f) {
+      return new Promise(function(res, rej) {
+        var r = new FileReader();
+        r.onload = function() {
+          res(r.result);
+        };
+        r.onerror = rej;
+        r.readAsDataURL(f);
+      });
+    }
     async function uploadImage(file) {
       var dataUrl = await fileToDataUrl(file);
-      var r = await fetch('/api/upload', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ dataUrl: dataUrl }) });
-      var j = await r.json(); if (!r.ok) throw new Error(j.error || 'Tải ảnh lỗi'); return j.url;
+      var r = await fetch('/api/upload', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          dataUrl: dataUrl
+        })
+      });
+      var j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Tải ảnh lỗi');
+      return j.url;
     }
 
     /* ---------- posts ---------- */
     async function loadPosts() {
       try {
-        var j = await (await fetch('/api/posts/all', { headers: authHeaders() })).json();
+        var j = await (await fetch('/api/posts/all', {
+          headers: authHeaders()
+        })).json();
         var arr = j.posts || [];
         $('posts-empty').style.display = arr.length ? 'none' : 'block';
-        $('posts-list').innerHTML = arr.map(function (p) {
-          return '<div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-4 flex gap-4">'
-            + (p.image ? '<img src="' + esc(p.image) + '" class="w-20 h-20 rounded-lg object-cover shrink-0" />' : '')
-            + '<div class="min-w-0 flex-1"><div class="flex items-center gap-2"><h3 class="font-600 truncate">' + esc(p.title) + '</h3>'
-            + (p.published ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Hiển thị</span>' : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600">Ẩn</span>') + '</div>'
-            + '<p class="text-sm text-ink-soft line-clamp-2 mt-0.5">' + esc((p.body || '').slice(0, 140)) + '</p>'
-            + '<div class="mt-2 flex gap-2 text-xs"><button data-edit="' + p.id + '" class="px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Sửa</button>'
-            + '<button data-del="' + p.id + '" class="px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button>'
-            + '<span class="ml-auto text-ink-soft">' + timeStr(p.createdAt) + '</span></div></div></div>';
+        $('posts-list').innerHTML = arr.map(function(p) {
+          return '<div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-4 flex gap-4">' +
+            (p.image ? '<img src="' + esc(p.image) + '" class="w-20 h-20 rounded-lg object-cover shrink-0" />' : '') +
+            '<div class="min-w-0 flex-1"><div class="flex items-center gap-2"><h3 class="font-600 truncate">' + esc(p.title) + '</h3>' +
+            (p.published ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Hiển thị</span>' : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600">Ẩn</span>') + '</div>' +
+            '<p class="text-sm text-ink-soft line-clamp-2 mt-0.5">' + esc((p.body || '').slice(0, 140)) + '</p>' +
+            '<div class="mt-2 flex gap-2 text-xs"><button data-edit="' + p.id + '" class="px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Sửa</button>' +
+            '<button data-del="' + p.id + '" class="px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button>' +
+            '<span class="ml-auto text-ink-soft">' + timeStr(p.createdAt) + '</span></div></div></div>';
         }).join('');
         window._posts = arr;
-        document.querySelectorAll('#posts-list [data-edit]').forEach(function (b) { b.onclick = function () { editPost(b.getAttribute('data-edit')); }; });
-        document.querySelectorAll('#posts-list [data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Xoá bài này?')) return; await fetch('/api/posts/' + b.getAttribute('data-del'), { method: 'DELETE', headers: authHeaders() }); loadPosts(); }; });
+        document.querySelectorAll('#posts-list [data-edit]').forEach(function(b) {
+          b.onclick = function() {
+            editPost(b.getAttribute('data-edit'));
+          };
+        });
+        document.querySelectorAll('#posts-list [data-del]').forEach(function(b) {
+          b.onclick = async function() {
+            if (!confirm('Xoá bài này?')) return;
+            await fetch('/api/posts/' + b.getAttribute('data-del'), {
+              method: 'DELETE',
+              headers: authHeaders()
+            });
+            loadPosts();
+          };
+        });
       } catch (e) {}
     }
+
     function editPost(id) {
-      var p = (window._posts || []).find(function (x) { return x.id === id; }); if (!p) return;
-      $('post-id').value = p.id; $('post-title').value = p.title; $('post-body').value = p.body;
-      $('post-image').value = p.image || ''; $('post-published').checked = !!p.published;
-      var pv = $('post-image-preview'); if (p.image) { pv.src = p.image; pv.classList.remove('hidden'); } else pv.classList.add('hidden');
-      $('post-form-title').textContent = 'Sửa bài đăng'; window.scrollTo({ top: 0, behavior: 'smooth' });
+      var p = (window._posts || []).find(function(x) {
+        return x.id === id;
+      });
+      if (!p) return;
+      $('post-id').value = p.id;
+      $('post-title').value = p.title;
+      $('post-body').value = p.body;
+      $('post-image').value = p.image || '';
+      $('post-published').checked = !!p.published;
+      var pv = $('post-image-preview');
+      if (p.image) {
+        pv.src = p.image;
+        pv.classList.remove('hidden');
+      } else pv.classList.add('hidden');
+      $('post-form-title').textContent = 'Sửa bài đăng';
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }
-    function resetPostForm() { $('post-form').reset(); $('post-id').value = ''; $('post-image').value = ''; $('post-image-preview').classList.add('hidden'); $('post-form-title').textContent = 'Thêm bài đăng'; $('post-msg').textContent = ''; }
+
+    function resetPostForm() {
+      $('post-form').reset();
+      $('post-id').value = '';
+      $('post-image').value = '';
+      $('post-image-preview').classList.add('hidden');
+      $('post-form-title').textContent = 'Thêm bài đăng';
+      $('post-msg').textContent = '';
+    }
     $('post-reset').addEventListener('click', resetPostForm);
-    $('post-image-file').addEventListener('change', async function () {
-      if (!this.files[0]) return; var msg = $('post-msg'); msg.textContent = 'Đang tải ảnh…'; msg.className = 'text-sm text-ink-soft';
-      try { var url = await uploadImage(this.files[0]); $('post-image').value = url; var pv = $('post-image-preview'); pv.src = url; pv.classList.remove('hidden'); msg.textContent = '✓ Đã tải ảnh'; msg.className = 'text-sm text-emerald-600'; }
-      catch (e) { msg.textContent = e.message; msg.className = 'text-sm text-crimson'; }
-    });
-    $('post-form').addEventListener('submit', async function (e) {
-      e.preventDefault(); var msg = $('post-msg');
-      var id = $('post-id').value;
-      var body = { title: $('post-title').value, body: $('post-body').value, image: $('post-image').value, published: $('post-published').checked };
+    $('post-image-file').addEventListener('change', async function() {
+      if (!this.files[0]) return;
+      var msg = $('post-msg');
+      msg.textContent = 'Đang tải ảnh…';
+      msg.className = 'text-sm text-ink-soft';
       try {
-        var r = await fetch('/api/posts' + (id ? '/' + id : ''), { method: id ? 'PUT' : 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+        var url = await uploadImage(this.files[0]);
+        $('post-image').value = url;
+        var pv = $('post-image-preview');
+        pv.src = url;
+        pv.classList.remove('hidden');
+        msg.textContent = '✓ Đã tải ảnh';
+        msg.className = 'text-sm text-emerald-600';
+      } catch (e) {
+        msg.textContent = e.message;
+        msg.className = 'text-sm text-crimson';
+      }
+    });
+    $('post-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var msg = $('post-msg');
+      var id = $('post-id').value;
+      var body = {
+        title: $('post-title').value,
+        body: $('post-body').value,
+        image: $('post-image').value,
+        published: $('post-published').checked
+      };
+      try {
+        var r = await fetch('/api/posts' + (id ? '/' + id : ''), {
+          method: id ? 'PUT' : 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(body)
+        });
         var j = await r.json();
-        if (!r.ok) { msg.textContent = j.error || 'Lỗi'; msg.className = 'text-sm text-crimson'; return; }
-        msg.textContent = '✓ Đã lưu'; msg.className = 'text-sm text-emerald-600'; resetPostForm(); loadPosts();
-      } catch (e2) { msg.textContent = 'Lỗi kết nối'; msg.className = 'text-sm text-crimson'; }
+        if (!r.ok) {
+          msg.textContent = j.error || 'Lỗi';
+          msg.className = 'text-sm text-crimson';
+          return;
+        }
+        msg.textContent = '✓ Đã lưu';
+        msg.className = 'text-sm text-emerald-600';
+        resetPostForm();
+        loadPosts();
+      } catch (e2) {
+        msg.textContent = 'Lỗi kết nối';
+        msg.className = 'text-sm text-crimson';
+      }
     });
 
     /* ---------- kéo–thả sắp xếp ---------- */
     function imgCard(it) {
-      return '<div draggable="true" data-id="' + it.id + '" class="sortable-item relative rounded-2xl overflow-hidden ring-1 ring-ink/10 bg-ink/5 aspect-[4/3] group cursor-grab active:cursor-grabbing">'
-        + '<img src="' + esc(it.src) + '" class="w-full h-full object-contain pointer-events-none" />'
-        + '<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/55 text-white text-xs opacity-0 group-hover:opacity-100 transition select-none">⠿ kéo để sắp xếp</span>'
-        + '<button data-del="' + it.id + '" class="absolute top-2 right-2 w-8 h-8 grid place-items-center rounded-full bg-black/55 text-white opacity-0 group-hover:opacity-100 hover:bg-crimson transition">✕</button></div>';
+      return '<div draggable="true" data-id="' + it.id + '" class="sortable-item relative rounded-2xl overflow-hidden ring-1 ring-ink/10 bg-ink/5 aspect-[4/3] group cursor-grab active:cursor-grabbing">' +
+        '<img src="' + esc(it.src) + '" class="w-full h-full object-contain pointer-events-none" />' +
+        '<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/55 text-white text-xs opacity-0 group-hover:opacity-100 transition select-none">⠿ kéo để sắp xếp</span>' +
+        '<button data-del="' + it.id + '" class="absolute top-2 right-2 w-8 h-8 grid place-items-center rounded-full bg-black/55 text-white opacity-0 group-hover:opacity-100 hover:bg-crimson transition">✕</button></div>';
     }
+
     function makeSortable(gridId, endpoint, reload) {
-      var grid = $(gridId); if (!grid) return;
+      var grid = $(gridId);
+      if (!grid) return;
       var dragEl = null;
-      grid.querySelectorAll('.sortable-item').forEach(function (el) {
-        el.addEventListener('dragstart', function (e) { dragEl = el; el.classList.add('opacity-40'); e.dataTransfer.effectAllowed = 'move'; });
-        el.addEventListener('dragend', function () { el.classList.remove('opacity-40'); dragEl = null; saveOrder(); });
-        el.addEventListener('dragover', function (e) {
+      grid.querySelectorAll('.sortable-item').forEach(function(el) {
+        el.addEventListener('dragstart', function(e) {
+          dragEl = el;
+          el.classList.add('opacity-40');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        el.addEventListener('dragend', function() {
+          el.classList.remove('opacity-40');
+          dragEl = null;
+          saveOrder();
+        });
+        el.addEventListener('dragover', function(e) {
           e.preventDefault();
           if (!dragEl || dragEl === el) return;
           var r = el.getBoundingClientRect();
@@ -462,8 +734,18 @@
         });
       });
       async function saveOrder() {
-        var ids = Array.prototype.map.call(grid.querySelectorAll('.sortable-item'), function (el) { return el.getAttribute('data-id'); });
-        try { await fetch(endpoint, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ ids: ids }) }); } catch (e) {}
+        var ids = Array.prototype.map.call(grid.querySelectorAll('.sortable-item'), function(el) {
+          return el.getAttribute('data-id');
+        });
+        try {
+          await fetch(endpoint, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({
+              ids: ids
+            })
+          });
+        } catch (e) {}
       }
     }
 
@@ -474,17 +756,44 @@
         var arr = j.items || [];
         $('cs-empty').style.display = arr.length ? 'none' : 'block';
         $('cs-grid').innerHTML = arr.map(imgCard).join('');
-        document.querySelectorAll('#cs-grid [data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Xoá ảnh này khỏi carousel?')) return; await fetch('/api/carousel/' + b.getAttribute('data-del'), { method: 'DELETE', headers: authHeaders() }); loadCarousel(); }; });
+        document.querySelectorAll('#cs-grid [data-del]').forEach(function(b) {
+          b.onclick = async function() {
+            if (!confirm('Xoá ảnh này khỏi carousel?')) return;
+            await fetch('/api/carousel/' + b.getAttribute('data-del'), {
+              method: 'DELETE',
+              headers: authHeaders()
+            });
+            loadCarousel();
+          };
+        });
         makeSortable('cs-grid', '/api/carousel/order', loadCarousel);
       } catch (e) {}
     }
-    $('cs-file').addEventListener('change', async function () {
-      var files = Array.prototype.slice.call(this.files); if (!files.length) return;
-      var msg = $('cs-msg'); msg.textContent = 'Đang tải ' + files.length + ' ảnh…'; msg.className = 'text-sm text-ink-soft';
+    $('cs-file').addEventListener('change', async function() {
+      var files = Array.prototype.slice.call(this.files);
+      if (!files.length) return;
+      var msg = $('cs-msg');
+      msg.textContent = 'Đang tải ' + files.length + ' ảnh…';
+      msg.className = 'text-sm text-ink-soft';
       try {
-        for (var i = 0; i < files.length; i++) { var url = await uploadImage(files[i]); await fetch('/api/carousel', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ src: url }) }); }
-        msg.textContent = '✓ Đã thêm ảnh'; msg.className = 'text-sm text-emerald-600'; this.value = ''; loadCarousel();
-      } catch (e) { msg.textContent = e.message; msg.className = 'text-sm text-crimson'; }
+        for (var i = 0; i < files.length; i++) {
+          var url = await uploadImage(files[i]);
+          await fetch('/api/carousel', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({
+              src: url
+            })
+          });
+        }
+        msg.textContent = '✓ Đã thêm ảnh';
+        msg.className = 'text-sm text-emerald-600';
+        this.value = '';
+        loadCarousel();
+      } catch (e) {
+        msg.textContent = e.message;
+        msg.className = 'text-sm text-crimson';
+      }
     });
 
     /* ---------- gallery (Khoảnh khắc) ---------- */
@@ -494,85 +803,187 @@
         var arr = j.items || [];
         $('gl-empty').style.display = arr.length ? 'none' : 'block';
         $('gl-grid').innerHTML = arr.map(imgCard).join('');
-        document.querySelectorAll('#gl-grid [data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Xoá ảnh này khỏi Khoảnh khắc?')) return; await fetch('/api/gallery/' + b.getAttribute('data-del'), { method: 'DELETE', headers: authHeaders() }); loadGallery(); }; });
+        document.querySelectorAll('#gl-grid [data-del]').forEach(function(b) {
+          b.onclick = async function() {
+            if (!confirm('Xoá ảnh này khỏi Khoảnh khắc?')) return;
+            await fetch('/api/gallery/' + b.getAttribute('data-del'), {
+              method: 'DELETE',
+              headers: authHeaders()
+            });
+            loadGallery();
+          };
+        });
         makeSortable('gl-grid', '/api/gallery/order', loadGallery);
       } catch (e) {}
     }
-    $('gl-file').addEventListener('change', async function () {
-      var files = Array.prototype.slice.call(this.files); if (!files.length) return;
-      var msg = $('gl-msg'); msg.textContent = 'Đang tải ' + files.length + ' ảnh…'; msg.className = 'text-sm text-ink-soft';
+    $('gl-file').addEventListener('change', async function() {
+      var files = Array.prototype.slice.call(this.files);
+      if (!files.length) return;
+      var msg = $('gl-msg');
+      msg.textContent = 'Đang tải ' + files.length + ' ảnh…';
+      msg.className = 'text-sm text-ink-soft';
       try {
-        for (var i = 0; i < files.length; i++) { var url = await uploadImage(files[i]); await fetch('/api/gallery', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ src: url }) }); }
-        msg.textContent = '✓ Đã thêm ảnh'; msg.className = 'text-sm text-emerald-600'; this.value = ''; loadGallery();
-      } catch (e) { msg.textContent = e.message; msg.className = 'text-sm text-crimson'; }
+        for (var i = 0; i < files.length; i++) {
+          var url = await uploadImage(files[i]);
+          await fetch('/api/gallery', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({
+              src: url
+            })
+          });
+        }
+        msg.textContent = '✓ Đã thêm ảnh';
+        msg.className = 'text-sm text-emerald-600';
+        this.value = '';
+        loadGallery();
+      } catch (e) {
+        msg.textContent = e.message;
+        msg.className = 'text-sm text-crimson';
+      }
     });
 
     /* ---------- jobposts (tin tuyển dụng) ---------- */
     var JP_F = ['title', 'brand', 'position', 'salary', 'quantity', 'location', 'workingTime', 'deadline', 'description', 'requirements', 'benefits'];
-    var JP_BRAND = { TTVH: 'Thịnh Thế Vinh Hoa', MC: 'MAYCHA', TH: 'Hồng Trà Sữa Tâm Hảo', GA: 'Gà Giòn Ba Cô Gái' };
+    var JP_BRAND = {
+      TTVH: 'Thịnh Thế Vinh Hoa',
+      MC: 'MAYCHA',
+      TH: 'Hồng Trà Sữa Tâm Hảo',
+      GA: 'Gà Giòn Ba Cô Gái'
+    };
     async function loadJobPosts() {
       try {
-        var j = await (await fetch('/api/jobposts/all', { headers: authHeaders() })).json();
+        var j = await (await fetch('/api/jobposts/all', {
+          headers: authHeaders()
+        })).json();
         var arr = j.posts || [];
         $('jp-empty').style.display = arr.length ? 'none' : 'block';
-        $('jp-list').innerHTML = arr.map(function (p) {
-          return '<div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-4 flex items-start gap-3">'
-            + '<div class="min-w-0 flex-1">'
-            + '<div class="flex items-center gap-2 flex-wrap"><span class="text-xs px-2 py-0.5 rounded-full bg-ink/5">' + esc(JP_BRAND[p.brand] || p.brand || '—') + '</span>'
-            + (p.published ? '' : '<span class="text-xs px-2 py-0.5 rounded-full bg-ink/10 text-ink-soft">Ẩn</span>') + '</div>'
-            + '<div class="font-600 mt-1 truncate">' + esc(p.title) + '</div>'
-            + '<div class="text-sm text-ink-soft mt-0.5">' + [p.salary, p.location, p.quantity ? ('SL: ' + p.quantity) : ''].filter(Boolean).map(esc).join(' · ') + '</div></div>'
-            + '<div class="flex flex-col gap-1.5 shrink-0">'
-            + '<button data-edit="' + p.id + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Sửa</button>'
-            + '<a href="tuyendung.html?id=' + encodeURIComponent(p.id) + '" target="_blank" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20 text-center">Xem</a>'
-            + '<button data-del="' + p.id + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>';
+        $('jp-list').innerHTML = arr.map(function(p) {
+          return '<div class="rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-4 flex items-start gap-3">' +
+            '<div class="min-w-0 flex-1">' +
+            '<div class="flex items-center gap-2 flex-wrap"><span class="text-xs px-2 py-0.5 rounded-full bg-ink/5">' + esc(JP_BRAND[p.brand] || p.brand || '—') + '</span>' +
+            (p.published ? '' : '<span class="text-xs px-2 py-0.5 rounded-full bg-ink/10 text-ink-soft">Ẩn</span>') + '</div>' +
+            '<div class="font-600 mt-1 truncate">' + esc(p.title) + '</div>' +
+            '<div class="text-sm text-ink-soft mt-0.5">' + [p.salary, p.location, p.quantity ? ('SL: ' + p.quantity) : ''].filter(Boolean).map(esc).join(' · ') + '</div></div>' +
+            '<div class="flex flex-col gap-1.5 shrink-0">' +
+            '<button data-edit="' + p.id + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Sửa</button>' +
+            '<a href="tuyendung.html?id=' + encodeURIComponent(p.id) + '" target="_blank" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20 text-center">Xem</a>' +
+            '<button data-del="' + p.id + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>';
         }).join('');
         window._jobposts = arr;
-        document.querySelectorAll('#jp-list [data-edit]').forEach(function (b) { b.onclick = function () { jpEdit(b.getAttribute('data-edit')); }; });
-        document.querySelectorAll('#jp-list [data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Xoá tin này?')) return; await fetch('/api/jobposts/' + b.getAttribute('data-del'), { method: 'DELETE', headers: authHeaders() }); loadJobPosts(); }; });
+        document.querySelectorAll('#jp-list [data-edit]').forEach(function(b) {
+          b.onclick = function() {
+            jpEdit(b.getAttribute('data-edit'));
+          };
+        });
+        document.querySelectorAll('#jp-list [data-del]').forEach(function(b) {
+          b.onclick = async function() {
+            if (!confirm('Xoá tin này?')) return;
+            await fetch('/api/jobposts/' + b.getAttribute('data-del'), {
+              method: 'DELETE',
+              headers: authHeaders()
+            });
+            loadJobPosts();
+          };
+        });
       } catch (e) {}
     }
+
     function jpEdit(id) {
-      var p = (window._jobposts || []).find(function (x) { return x.id === id; }); if (!p) return;
-      $('jp-id').value = p.id; $('jp-form-title').textContent = 'Sửa tin tuyển dụng';
-      JP_F.forEach(function (k) { var el = $('jp-' + k); if (el) el.value = p[k] || ''; });
+      var p = (window._jobposts || []).find(function(x) {
+        return x.id === id;
+      });
+      if (!p) return;
+      $('jp-id').value = p.id;
+      $('jp-form-title').textContent = 'Sửa tin tuyển dụng';
+      JP_F.forEach(function(k) {
+        var el = $('jp-' + k);
+        if (el) el.value = p[k] || '';
+      });
       $('jp-published').checked = p.published !== false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }
-    function jpReset() { $('jp-form').reset(); $('jp-id').value = ''; $('jp-form-title').textContent = 'Thêm tin tuyển dụng'; $('jp-published').checked = true; $('jp-msg').textContent = ''; }
+
+    function jpReset() {
+      $('jp-form').reset();
+      $('jp-id').value = '';
+      $('jp-form-title').textContent = 'Thêm tin tuyển dụng';
+      $('jp-published').checked = true;
+      $('jp-msg').textContent = '';
+    }
     $('jp-reset').addEventListener('click', jpReset);
-    $('jp-form').addEventListener('submit', async function (e) {
+    $('jp-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      var msg = $('jp-msg'); var id = $('jp-id').value;
-      var body = { published: $('jp-published').checked };
-      JP_F.forEach(function (k) { var el = $('jp-' + k); body[k] = el ? el.value.trim() : ''; });
-      if (!body.title) { msg.textContent = 'Vui lòng nhập tiêu đề'; msg.className = 'text-sm text-crimson'; return; }
-      msg.textContent = 'Đang lưu…'; msg.className = 'text-sm text-ink-soft';
+      var msg = $('jp-msg');
+      var id = $('jp-id').value;
+      var body = {
+        published: $('jp-published').checked
+      };
+      JP_F.forEach(function(k) {
+        var el = $('jp-' + k);
+        body[k] = el ? el.value.trim() : '';
+      });
+      if (!body.title) {
+        msg.textContent = 'Vui lòng nhập tiêu đề';
+        msg.className = 'text-sm text-crimson';
+        return;
+      }
+      msg.textContent = 'Đang lưu…';
+      msg.className = 'text-sm text-ink-soft';
       try {
         var url = id ? '/api/jobposts/' + id : '/api/jobposts';
-        var r = await fetch(url, { method: id ? 'PUT' : 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+        var r = await fetch(url, {
+          method: id ? 'PUT' : 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(body)
+        });
         if (!r.ok) throw new Error((await r.json()).error || 'Lỗi lưu');
-        msg.textContent = '✓ Đã lưu'; msg.className = 'text-sm text-emerald-600';
-        jpReset(); loadJobPosts();
-      } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm text-crimson'; }
+        msg.textContent = '✓ Đã lưu';
+        msg.className = 'text-sm text-emerald-600';
+        jpReset();
+        loadJobPosts();
+      } catch (e) {
+        msg.textContent = '✗ ' + e.message;
+        msg.className = 'text-sm text-crimson';
+      }
     });
 
     /* ---------- jobs (tuyển dụng) ---------- */
-    var jobStores = [];        // dữ liệu cửa hàng đang sửa
-    var jobJobs = {};          // mô tả công việc
-    var jobCharts = {};        // các Chart.js instance
+    var jobStores = []; // dữ liệu cửa hàng đang sửa
+    var jobJobs = {}; // mô tả công việc
+    var jobCharts = {}; // các Chart.js instance
     var NEEDK = ['SM', 'SL', 'ASF', 'Staff', 'StaffFT', 'CSS'];
-    var BRAND_VN = { MC: 'MAYCHA', TH: 'Tâm Hảo', GA: 'Gà Ba Cô Gái' };
-    var POS_VN = { SM: 'Cửa hàng trưởng', SL: 'Trưởng ca', ASF: 'NV Fulltime', SE: 'NV Part-time', CSS: 'Hoạt náo (CSS)' };
+    var BRAND_VN = {
+      MC: 'MAYCHA',
+      TH: 'Tâm Hảo',
+      GA: 'Gà Ba Cô Gái'
+    };
+    var POS_VN = {
+      SM: 'Cửa hàng trưởng',
+      SL: 'Trưởng ca',
+      ASF: 'NV Fulltime',
+      SE: 'NV Part-time',
+      CSS: 'Hoạt náo (CSS)'
+    };
 
     async function loadJobData() {
       try {
-        var j = await (await fetch('/api/jobdata/full', { headers: authHeaders() })).json();
+        var j = await (await fetch('/api/jobdata/full', {
+          headers: authHeaders()
+        })).json();
         var has = j && j.hasData;
         $('job-empty').classList.toggle('hidden', !!has);
         $('job-cards').classList.toggle('hidden', !has);
-        if (!has) { jobStores = []; return; }
-        jobStores = (j.stores || []).map(function (s) { return s; });
+        if (!has) {
+          jobStores = [];
+          return;
+        }
+        jobStores = (j.stores || []).map(function(s) {
+          return s;
+        });
         jobJobs = j.jobs || {};
         renderJobStats(j.summary || {});
         renderJobCharts();
@@ -581,7 +992,9 @@
     }
 
     function renderJobStats(s) {
-      var totalNeed = jobStores.reduce(function (a, st) { return a + (Number(st.needTotal) || 0); }, 0);
+      var totalNeed = jobStores.reduce(function(a, st) {
+        return a + (Number(st.needTotal) || 0);
+      }, 0);
       $('job-stores').textContent = s.storeCount || jobStores.length;
       $('job-open').textContent = s.openCount || 0;
       $('job-need').textContent = totalNeed;
@@ -591,216 +1004,568 @@
     }
 
     function aggPositions() { // tổng cần tuyển theo vị trí (gộp về 5 nhóm chatbot)
-      var sum = { SM: 0, SL: 0, ASF: 0, SE: 0, CSS: 0 };
-      jobStores.forEach(function (s) {
+      var sum = {
+        SM: 0,
+        SL: 0,
+        ASF: 0,
+        SE: 0,
+        CSS: 0
+      };
+      jobStores.forEach(function(s) {
         var n = s.need || {};
-        sum.SM += Math.max(+n.SM || 0, 0); sum.SL += Math.max(+n.SL || 0, 0);
+        sum.SM += Math.max(+n.SM || 0, 0);
+        sum.SL += Math.max(+n.SL || 0, 0);
         sum.ASF += Math.max(+n.ASF || 0, 0) + Math.max(+n.StaffFT || 0, 0);
-        sum.SE += Math.max(+n.Staff || 0, 0); sum.CSS += Math.max(+n.CSS || 0, 0);
+        sum.SE += Math.max(+n.Staff || 0, 0);
+        sum.CSS += Math.max(+n.CSS || 0, 0);
       });
       return sum;
     }
 
     function mkChart(id, cfg) {
-      if (jobCharts[id]) { jobCharts[id].destroy(); }
-      var el = $(id); if (!el || !window.Chart) return;
+      if (jobCharts[id]) {
+        jobCharts[id].destroy();
+      }
+      var el = $(id);
+      if (!el || !window.Chart) return;
       jobCharts[id] = new Chart(el.getContext('2d'), cfg);
     }
 
     function renderJobCharts() {
-      var C = { crimson: '#A8131C', gold: '#C19A2B', ink: '#1B1714', teal: '#2B8A7C', blue: '#3B6FB0', soft: '#6A5F54' };
+      var C = {
+        crimson: '#A8131C',
+        gold: '#C19A2B',
+        ink: '#1B1714',
+        teal: '#2B8A7C',
+        blue: '#3B6FB0',
+        soft: '#6A5F54'
+      };
       // 1) nhu cầu theo vị trí
       var ap = aggPositions();
       mkChart('chart-pos', {
         type: 'bar',
-        data: { labels: ['Cửa hàng trưởng', 'Trưởng ca', 'NV Fulltime', 'NV Part-time', 'Hoạt náo'],
-          datasets: [{ label: 'Cần tuyển', data: [ap.SM, ap.SL, ap.ASF, ap.SE, ap.CSS], backgroundColor: [C.crimson, C.gold, C.blue, C.teal, '#B5651D'], borderRadius: 6 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+        data: {
+          labels: ['Cửa hàng trưởng', 'Trưởng ca', 'NV Fulltime', 'NV Part-time', 'Hoạt náo'],
+          datasets: [{
+            label: 'Cần tuyển',
+            data: [ap.SM, ap.SL, ap.ASF, ap.SE, ap.CSS],
+            backgroundColor: [C.crimson, C.gold, C.blue, C.teal, '#B5651D'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
       });
       // 2) theo thương hiệu
-      var brs = {}; jobStores.forEach(function (s) { brs[s.brand] = (brs[s.brand] || 0) + 1; });
+      var brs = {};
+      jobStores.forEach(function(s) {
+        brs[s.brand] = (brs[s.brand] || 0) + 1;
+      });
       mkChart('chart-brand', {
         type: 'doughnut',
-        data: { labels: Object.keys(brs).map(function (b) { return BRAND_VN[b] || b; }),
-          datasets: [{ data: Object.values(brs), backgroundColor: [C.crimson, C.gold, C.teal, C.blue, C.soft] }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        data: {
+          labels: Object.keys(brs).map(function(b) {
+            return BRAND_VN[b] || b;
+          }),
+          datasets: [{
+            data: Object.values(brs),
+            backgroundColor: [C.crimson, C.gold, C.teal, C.blue, C.soft]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
       });
       // 3) top 10 cần tuyển nhiều nhất
-      var top = jobStores.slice().filter(function (s) { return s.needTotal > 0; }).sort(function (a, b) { return b.needTotal - a.needTotal; }).slice(0, 10);
+      var top = jobStores.slice().filter(function(s) {
+        return s.needTotal > 0;
+      }).sort(function(a, b) {
+        return b.needTotal - a.needTotal;
+      }).slice(0, 10);
       mkChart('chart-top', {
         type: 'bar',
-        data: { labels: top.map(function (s) { return (BRAND_VN[s.brand] || s.brand) + ' ' + s.name; }),
-          datasets: [{ label: 'Cần tuyển', data: top.map(function (s) { return s.needTotal; }), backgroundColor: C.crimson, borderRadius: 5 }] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+        data: {
+          labels: top.map(function(s) {
+            return (BRAND_VN[s.brand] || s.brand) + ' ' + s.name;
+          }),
+          datasets: [{
+            label: 'Cần tuyển',
+            data: top.map(function(s) {
+              return s.needTotal;
+            }),
+            backgroundColor: C.crimson,
+            borderRadius: 5
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
       });
       // 4) tình trạng tuyển dụng
-      var openN = jobStores.filter(function (s) { return (s.openPositions || []).length; }).length;
+      var openN = jobStores.filter(function(s) {
+        return (s.openPositions || []).length;
+      }).length;
       mkChart('chart-status', {
         type: 'doughnut',
-        data: { labels: ['Đang tuyển', 'Đã đủ nhân sự'],
-          datasets: [{ data: [openN, jobStores.length - openN], backgroundColor: [C.crimson, '#D9D2C7'] }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        data: {
+          labels: ['Đang tuyển', 'Đã đủ nhân sự'],
+          datasets: [{
+            data: [openN, jobStores.length - openN],
+            backgroundColor: [C.crimson, '#D9D2C7']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
       });
     }
 
     function renderJobTable(filter) {
       var f = (filter || '').toLowerCase();
-      var rows = jobStores.map(function (s, i) { s._i = i; return s; }).filter(function (s) {
+      var rows = jobStores.map(function(s, i) {
+        s._i = i;
+        return s;
+      }).filter(function(s) {
         if (!f) return true;
         return ((s.code || '') + ' ' + (s.name || '') + ' ' + (s.address || '')).toLowerCase().indexOf(f) > -1;
       });
-      var num = function (v) { return '<input type="number" data-i="' + v.i + '" data-k="' + v.k + '" value="' + (Number(v.val) || 0) + '" class="jcell w-14 px-1 py-1 text-center rounded ring-1 ring-ink/10" />'; };
-      var txt = function (i, k, val, cls) { return '<input data-i="' + i + '" data-k="' + k + '" value="' + esc(val || '') + '" class="jcell ' + (cls || '') + ' px-2 py-1 rounded ring-1 ring-ink/10 w-full" />'; };
-      $('job-tbody').innerHTML = rows.map(function (s) {
-        var i = s._i, n = s.need || {};
-        return '<tr class="border-b border-ink/5">'
-          + '<td class="p-1 text-ink-soft text-xs">' + (i + 1) + '</td>'
-          + '<td class="p-1">' + txt(i, 'code', s.code, 'w-20') + '</td>'
-          + '<td class="p-1">' + txt(i, 'brand', s.brand, 'w-14') + '</td>'
-          + '<td class="p-1">' + txt(i, 'name', s.name) + '</td>'
-          + '<td class="p-1">' + txt(i, 'address', s.address) + '</td>'
-          + NEEDK.map(function (k) { return '<td class="p-1 text-center">' + num({ i: i, k: k, val: n[k] }) + '</td>'; }).join('')
-          + '<td class="p-1 text-center"><button data-del="' + i + '" class="text-crimson hover:bg-crimson/10 rounded px-1.5">✕</button></td>'
-          + '</tr>';
+      var num = function(v) {
+        return '<input type="number" data-i="' + v.i + '" data-k="' + v.k + '" value="' + (Number(v.val) || 0) + '" class="jcell w-14 px-1 py-1 text-center rounded ring-1 ring-ink/10" />';
+      };
+      var txt = function(i, k, val, cls) {
+        return '<input data-i="' + i + '" data-k="' + k + '" value="' + esc(val || '') + '" class="jcell ' + (cls || '') + ' px-2 py-1 rounded ring-1 ring-ink/10 w-full" />';
+      };
+      $('job-tbody').innerHTML = rows.map(function(s) {
+        var i = s._i,
+          n = s.need || {};
+        return '<tr class="border-b border-ink/5">' +
+          '<td class="p-1 text-ink-soft text-xs">' + (i + 1) + '</td>' +
+          '<td class="p-1">' + txt(i, 'code', s.code, 'w-20') + '</td>' +
+          '<td class="p-1">' + txt(i, 'brand', s.brand, 'w-14') + '</td>' +
+          '<td class="p-1">' + txt(i, 'name', s.name) + '</td>' +
+          '<td class="p-1">' + txt(i, 'address', s.address) + '</td>' +
+          NEEDK.map(function(k) {
+            return '<td class="p-1 text-center">' + num({
+              i: i,
+              k: k,
+              val: n[k]
+            }) + '</td>';
+          }).join('') +
+          '<td class="p-1 text-center"><button data-del="' + i + '" class="text-crimson hover:bg-crimson/10 rounded px-1.5">✕</button></td>' +
+          '</tr>';
       }).join('');
       $('job-count').textContent = 'Hiển thị ' + rows.length + ' / ' + jobStores.length + ' cửa hàng';
       // gắn sự kiện sửa
-      document.querySelectorAll('#job-tbody .jcell').forEach(function (el) {
-        el.addEventListener('change', function () {
-          var i = +el.getAttribute('data-i'), k = el.getAttribute('data-k');
-          if (NEEDK.indexOf(k) > -1) { jobStores[i].need = jobStores[i].need || {}; jobStores[i].need[k] = Number(el.value) || 0; }
-          else { jobStores[i][k] = el.value; }
+      document.querySelectorAll('#job-tbody .jcell').forEach(function(el) {
+        el.addEventListener('change', function() {
+          var i = +el.getAttribute('data-i'),
+            k = el.getAttribute('data-k');
+          if (NEEDK.indexOf(k) > -1) {
+            jobStores[i].need = jobStores[i].need || {};
+            jobStores[i].need[k] = Number(el.value) || 0;
+          } else {
+            jobStores[i][k] = el.value;
+          }
         });
       });
-      document.querySelectorAll('#job-tbody [data-del]').forEach(function (b) {
-        b.onclick = function () { var i = +b.getAttribute('data-del'); if (!confirm('Xoá cửa hàng "' + (jobStores[i].name || jobStores[i].code) + '"?')) return; jobStores.splice(i, 1); renderJobTable($('job-search').value || ''); };
+      document.querySelectorAll('#job-tbody [data-del]').forEach(function(b) {
+        b.onclick = function() {
+          var i = +b.getAttribute('data-del');
+          if (!confirm('Xoá cửa hàng "' + (jobStores[i].name || jobStores[i].code) + '"?')) return;
+          jobStores.splice(i, 1);
+          renderJobTable($('job-search').value || '');
+        };
       });
     }
 
-    $('job-search').addEventListener('input', function () { renderJobTable(this.value); });
-    $('job-add').addEventListener('click', function () {
-      jobStores.unshift({ code: '', brand: 'MC', name: '', address: '', need: { SM: 0, SL: 0, ASF: 0, Staff: 0, StaffFT: 0, CSS: 0 }, needTotal: 0, openPositions: [] });
-      $('job-search').value = ''; renderJobTable('');
+    $('job-search').addEventListener('input', function() {
+      renderJobTable(this.value);
     });
-    $('job-save').addEventListener('click', async function () {
-      var msg = $('job-msg'); msg.textContent = 'Đang lưu…'; msg.className = 'text-sm text-ink-soft';
+    $('job-add').addEventListener('click', function() {
+      jobStores.unshift({
+        code: '',
+        brand: 'MC',
+        name: '',
+        address: '',
+        need: {
+          SM: 0,
+          SL: 0,
+          ASF: 0,
+          Staff: 0,
+          StaffFT: 0,
+          CSS: 0
+        },
+        needTotal: 0,
+        openPositions: []
+      });
+      $('job-search').value = '';
+      renderJobTable('');
+    });
+    $('job-save').addEventListener('click', async function() {
+      var msg = $('job-msg');
+      msg.textContent = 'Đang lưu…';
+      msg.className = 'text-sm text-ink-soft';
       try {
-        var clean = jobStores.filter(function (s) { return (s.code || '').trim(); });
-        var r = await fetch('/api/jobdata', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ stores: clean, jobs: jobJobs }) });
+        var clean = jobStores.filter(function(s) {
+          return (s.code || '').trim();
+        });
+        var r = await fetch('/api/jobdata', {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            stores: clean,
+            jobs: jobJobs
+          })
+        });
         var j = await r.json();
         if (!r.ok) throw new Error(j.error || 'Lỗi lưu');
-        msg.textContent = '✓ Đã cập nhật & vẽ lại biểu đồ.'; msg.className = 'text-sm text-emerald-600';
+        msg.textContent = '✓ Đã cập nhật & vẽ lại biểu đồ.';
+        msg.className = 'text-sm text-emerald-600';
         loadJobData();
-      } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm text-crimson'; }
+      } catch (e) {
+        msg.textContent = '✗ ' + e.message;
+        msg.className = 'text-sm text-crimson';
+      }
     });
-    $('job-file').addEventListener('change', function () {
-      var f = this.files && this.files[0]; if (!f) return;
-      var input = this, msg = $('job-msg');
-      msg.textContent = 'Đang đọc & nạp file "' + f.name + '"…'; msg.className = 'text-sm text-ink-soft';
+    $('job-file').addEventListener('change', function() {
+      var f = this.files && this.files[0];
+      if (!f) return;
+      var input = this,
+        msg = $('job-msg');
+      msg.textContent = 'Đang đọc & nạp file "' + f.name + '"…';
+      msg.className = 'text-sm text-ink-soft';
       var rd = new FileReader();
-      rd.onload = async function () {
+      rd.onload = async function() {
         try {
-          var r = await fetch('/api/jobdata/upload', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ dataUrl: rd.result }) });
+          var r = await fetch('/api/jobdata/upload', {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({
+              dataUrl: rd.result
+            })
+          });
           var j = await r.json();
           if (!r.ok) throw new Error(j.error || 'Lỗi tải lên');
           var s = j.summary || {};
           msg.textContent = '✓ Đã cập nhật: ' + (s.storeCount || 0) + ' cửa hàng, ' + (s.openCount || 0) + ' đang tuyển, ' + (s.geocodedCount || 0) + ' có toạ độ.';
           msg.className = 'text-sm text-emerald-600';
-          input.value = ''; loadJobData();
-        } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm text-crimson'; }
+          input.value = '';
+          loadJobData();
+        } catch (e) {
+          msg.textContent = '✗ ' + e.message;
+          msg.className = 'text-sm text-crimson';
+        }
       };
       rd.readAsDataURL(f);
     });
 
     /* ---------- staff ---------- */
     async function loadAgents() {
-      if (meRole !== 'admin') { $('agents-list').innerHTML = '<p class="py-4 text-ink-soft">Chỉ quản trị viên mới xem được.</p>'; return; }
+      if (meRole !== 'admin') {
+        $('agents-list').innerHTML = '<p class="py-4 text-ink-soft">Chỉ quản trị viên mới xem được.</p>';
+        return;
+      }
       try {
-        var j = await (await fetch('/api/agents', { headers: authHeaders() })).json();
-        $('agents-list').innerHTML = (j.agents || []).map(function (a) {
-          return '<div class="flex items-center gap-2 py-3 border-b border-ink/10 last:border-0"><div class="min-w-0"><div class="font-600 truncate">' + esc(a.name) + ' <span class="text-ink-soft font-400">@' + esc(a.username) + '</span></div></div>'
-            + '<div class="ml-auto flex items-center gap-2 shrink-0">'
-            + '<select data-role="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-cream ring-1 ring-ink/15">'
-            + '<option value="agent"' + (a.role !== 'admin' ? ' selected' : '') + '>Nhân viên</option>'
-            + '<option value="admin"' + (a.role === 'admin' ? ' selected' : '') + '>Quản trị (admin)</option></select>'
-            + '<button data-reset="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Đặt lại MK</button>'
-            + '<button data-del="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>';
+        var j = await (await fetch('/api/agents', {
+          headers: authHeaders()
+        })).json();
+        $('agents-list').innerHTML = (j.agents || []).map(function(a) {
+          return '<div class="flex items-center gap-2 py-3 border-b border-ink/10 last:border-0"><div class="min-w-0"><div class="font-600 truncate">' + esc(a.name) + ' <span class="text-ink-soft font-400">@' + esc(a.username) + '</span></div></div>' +
+            '<div class="ml-auto flex items-center gap-2 shrink-0">' +
+            '<select data-role="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-cream ring-1 ring-ink/15">' +
+            '<option value="agent"' + (a.role !== 'admin' ? ' selected' : '') + '>Nhân viên</option>' +
+            '<option value="admin"' + (a.role === 'admin' ? ' selected' : '') + '>Quản trị (admin)</option></select>' +
+            '<button data-reset="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Đặt lại MK</button>' +
+            '<button data-del="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>';
         }).join('');
-        document.querySelectorAll('#agents-list [data-role]').forEach(function (s) { s.onchange = async function () { var u = s.getAttribute('data-role'); var r = await fetch('/api/agents/' + encodeURIComponent(u) + '/role', { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ role: s.value }) }); var jr = await r.json(); if (r.ok) { alert('✓ Đã đổi quyền @' + u + ' thành ' + (s.value === 'admin' ? 'Quản trị' : 'Nhân viên')); } else { alert(jr.error || 'Lỗi'); loadAgents(); } }; });
-        document.querySelectorAll('#agents-list [data-reset]').forEach(function (b) { b.onclick = async function () { var u = b.getAttribute('data-reset'); var p = prompt('Mật khẩu mới cho @' + u + ' (≥6):'); if (!p) return; var r = await fetch('/api/agents/' + encodeURIComponent(u) + '/reset-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ password: p }) }); alert((await r.json()).error || '✓ Đã đặt lại'); }; });
-        document.querySelectorAll('#agents-list [data-del]').forEach(function (b) { b.onclick = async function () { var u = b.getAttribute('data-del'); if (!confirm('Xoá @' + u + '?')) return; var r = await fetch('/api/agents/' + encodeURIComponent(u), { method: 'DELETE', headers: authHeaders() }); if (r.ok) loadAgents(); else alert((await r.json()).error || 'Lỗi'); }; });
+        document.querySelectorAll('#agents-list [data-role]').forEach(function(s) {
+          s.onchange = async function() {
+            var u = s.getAttribute('data-role');
+            var r = await fetch('/api/agents/' + encodeURIComponent(u) + '/role', {
+              method: 'PUT',
+              headers: authHeaders(),
+              body: JSON.stringify({
+                role: s.value
+              })
+            });
+            var jr = await r.json();
+            if (r.ok) {
+              alert('✓ Đã đổi quyền @' + u + ' thành ' + (s.value === 'admin' ? 'Quản trị' : 'Nhân viên'));
+            } else {
+              alert(jr.error || 'Lỗi');
+              loadAgents();
+            }
+          };
+        });
+        document.querySelectorAll('#agents-list [data-reset]').forEach(function(b) {
+          b.onclick = async function() {
+            var u = b.getAttribute('data-reset');
+            var p = prompt('Mật khẩu mới cho @' + u + ' (≥6):');
+            if (!p) return;
+            var r = await fetch('/api/agents/' + encodeURIComponent(u) + '/reset-password', {
+              method: 'POST',
+              headers: authHeaders(),
+              body: JSON.stringify({
+                password: p
+              })
+            });
+            alert((await r.json()).error || '✓ Đã đặt lại');
+          };
+        });
+        document.querySelectorAll('#agents-list [data-del]').forEach(function(b) {
+          b.onclick = async function() {
+            var u = b.getAttribute('data-del');
+            if (!confirm('Xoá @' + u + '?')) return;
+            var r = await fetch('/api/agents/' + encodeURIComponent(u), {
+              method: 'DELETE',
+              headers: authHeaders()
+            });
+            if (r.ok) loadAgents();
+            else alert((await r.json()).error || 'Lỗi');
+          };
+        });
       } catch (e) {}
     }
-    $('add-form').addEventListener('submit', async function (e) {
-      e.preventDefault(); var msg = $('add-msg');
+    $('add-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var msg = $('add-msg');
       try {
-        var r = await fetch('/api/agents', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ username: $('ag-user').value, name: $('ag-name').value, password: $('ag-pass').value, role: $('ag-role').value }) });
+        var r = await fetch('/api/agents', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            username: $('ag-user').value,
+            name: $('ag-name').value,
+            password: $('ag-pass').value,
+            role: $('ag-role').value
+          })
+        });
         var j = await r.json();
-        if (r.ok) { msg.textContent = '✓ Đã tạo @' + j.username; msg.className = 'text-sm text-emerald-600'; $('add-form').reset(); loadAgents(); }
-        else { msg.textContent = j.error || 'Lỗi'; msg.className = 'text-sm text-crimson'; }
-      } catch (e2) { msg.textContent = 'Lỗi kết nối'; msg.className = 'text-sm text-crimson'; }
+        if (r.ok) {
+          msg.textContent = '✓ Đã tạo @' + j.username;
+          msg.className = 'text-sm text-emerald-600';
+          $('add-form').reset();
+          loadAgents();
+        } else {
+          msg.textContent = j.error || 'Lỗi';
+          msg.className = 'text-sm text-crimson';
+        }
+      } catch (e2) {
+        msg.textContent = 'Lỗi kết nối';
+        msg.className = 'text-sm text-crimson';
+      }
     });
 
     /* ---------- account ---------- */
-    $('pw-form').addEventListener('submit', async function (e) {
-      e.preventDefault(); var msg = $('pw-msg');
-      if ($('pw-new').value !== $('pw-cf').value) { msg.textContent = 'Mật khẩu xác nhận không khớp'; msg.className = 'text-sm text-crimson'; return; }
+    $('pw-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var msg = $('pw-msg');
+      if ($('pw-new').value !== $('pw-cf').value) {
+        msg.textContent = 'Mật khẩu xác nhận không khớp';
+        msg.className = 'text-sm text-crimson';
+        return;
+      }
       try {
-        var r = await fetch('/api/agent/change-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ currentPassword: $('pw-cur').value, newPassword: $('pw-new').value }) });
+        var r = await fetch('/api/agent/change-password', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            currentPassword: $('pw-cur').value,
+            newPassword: $('pw-new').value
+          })
+        });
         var j = await r.json();
-        if (r.ok) { msg.textContent = '✓ Đã đổi mật khẩu'; msg.className = 'text-sm text-emerald-600'; $('pw-form').reset(); }
-        else { msg.textContent = j.error || 'Lỗi'; msg.className = 'text-sm text-crimson'; }
-      } catch (e2) { msg.textContent = 'Lỗi kết nối'; msg.className = 'text-sm text-crimson'; }
+        if (r.ok) {
+          msg.textContent = '✓ Đã đổi mật khẩu';
+          msg.className = 'text-sm text-emerald-600';
+          $('pw-form').reset();
+        } else {
+          msg.textContent = j.error || 'Lỗi';
+          msg.className = 'text-sm text-crimson';
+        }
+      } catch (e2) {
+        msg.textContent = 'Lỗi kết nối';
+        msg.className = 'text-sm text-crimson';
+      }
     });
 
     /* ---------- chat (realtime) ---------- */
     function setConn(state) {
       var el = $('conn');
-      if (state === 'on') { el.className = 'px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700'; el.textContent = '● Trực tuyến'; }
-      else if (state === 'connecting') { el.className = 'px-2.5 py-1 rounded-full bg-amber-100 text-amber-700'; el.textContent = '● Đang kết nối…'; }
-      else { el.className = 'px-2.5 py-1 rounded-full bg-gray-200 text-gray-600'; el.textContent = '● Ngoại tuyến'; }
+      if (state === 'on') {
+        el.className = 'px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700';
+        el.textContent = '● Trực tuyến';
+      } else if (state === 'connecting') {
+        el.className = 'px-2.5 py-1 rounded-full bg-amber-100 text-amber-700';
+        el.textContent = '● Đang kết nối…';
+      } else {
+        el.className = 'px-2.5 py-1 rounded-full bg-gray-200 text-gray-600';
+        el.textContent = '● Ngoại tuyến';
+      }
     }
+
     function connect() {
       if (!token) return showLogin();
       setConn('connecting');
       var proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      try { ws = new WebSocket(proto + '://' + location.host + '/ws'); } catch (e) { setConn('off'); return; }
-      ws.onopen = function () { retry = 0; setConn('on'); send({ type: 'hello', role: 'agent', token: token }); };
-      ws.onmessage = function (ev) {
-        var m; try { m = JSON.parse(ev.data); } catch (e) { return; }
-        if (m.type === 'agent_init') { me = m.me || me; meRole = m.role || meRole; $('me').textContent = '👤 ' + me + (meRole === 'admin' ? ' (admin)' : ''); $('nav-staff').style.display = meRole === 'admin' ? '' : 'none'; convs = {}; (m.conversations || []).forEach(function (c) { convs[c.cid] = c; }); renderList(); if (!current) { var s = sorted(); if (s.length) select(s[0].cid); } $('ov-conv').textContent = Object.keys(convs).length; }
-        else if (m.type === 'update') { convs[m.conv.cid] = m.conv; renderList(); if (current === m.conv.cid) renderConv(); if (activePanel !== 'chat') $('chat-dot').classList.remove('hidden'); $('ov-conv').textContent = Object.keys(convs).length; }
-        else if (m.type === 'presence') { var n = (m.agents || []).length; $('presence').textContent = n + ' NV trực tuyến'; $('ov-online').textContent = n; }
-        else if (m.type === 'auth_error') { localStorage.removeItem('ttvh_agent_jwt'); token = ''; try { ws.close(); } catch (e) {} showLogin('Phiên hết hạn, vui lòng đăng nhập lại.'); }
+      try {
+        ws = new WebSocket(proto + '://' + location.host + '/ws');
+      } catch (e) {
+        setConn('off');
+        return;
+      }
+      ws.onopen = function() {
+        retry = 0;
+        setConn('on');
+        send({
+          type: 'hello',
+          role: 'agent',
+          token: token
+        });
       };
-      ws.onclose = function () { setConn('off'); if (token) { retry = Math.min(retry + 1, 6); setTimeout(connect, 1000 * retry); } };
-      ws.onerror = function () { try { ws.close(); } catch (e) {} };
+      ws.onmessage = function(ev) {
+        var m;
+        try {
+          m = JSON.parse(ev.data);
+        } catch (e) {
+          return;
+        }
+        if (m.type === 'agent_init') {
+          me = m.me || me;
+          meRole = m.role || meRole;
+          $('me').textContent = '👤 ' + me + (meRole === 'admin' ? ' (admin)' : '');
+          $('nav-staff').style.display = meRole === 'admin' ? '' : 'none';
+          convs = {};
+          (m.conversations || []).forEach(function(c) {
+            convs[c.cid] = c;
+          });
+          renderList();
+          if (!current) {
+            var s = sorted();
+            if (s.length) select(s[0].cid);
+          }
+          $('ov-conv').textContent = Object.keys(convs).length;
+        } else if (m.type === 'update') {
+          convs[m.conv.cid] = m.conv;
+          renderList();
+          if (current === m.conv.cid) renderConv();
+          if (activePanel !== 'chat') $('chat-dot').classList.remove('hidden');
+          $('ov-conv').textContent = Object.keys(convs).length;
+        } else if (m.type === 'presence') {
+          var n = (m.agents || []).length;
+          $('presence').textContent = n + ' NV trực tuyến';
+          $('ov-online').textContent = n;
+        } else if (m.type === 'auth_error') {
+          localStorage.removeItem('ttvh_agent_jwt');
+          token = '';
+          try {
+            ws.close();
+          } catch (e) {}
+          showLogin('Phiên hết hạn, vui lòng đăng nhập lại.');
+        }
+      };
+      ws.onclose = function() {
+        setConn('off');
+        if (token) {
+          retry = Math.min(retry + 1, 6);
+          setTimeout(connect, 1000 * retry);
+        }
+      };
+      ws.onerror = function() {
+        try {
+          ws.close();
+        } catch (e) {}
+      };
     }
-    function send(o) { try { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); } catch (e) {} }
-    function sorted() { return Object.values(convs).sort(function (a, b) { return b.updatedAt - a.updatedAt; }); }
+
+    function send(o) {
+      try {
+        if (ws && ws.readyState === 1) ws.send(JSON.stringify(o));
+      } catch (e) {}
+    }
+
+    function sorted() {
+      return Object.values(convs).sort(function(a, b) {
+        return b.updatedAt - a.updatedAt;
+      });
+    }
+
     function renderList() {
-      var arr = sorted(); $('list-empty').style.display = arr.length ? 'none' : 'block';
-      $('list').innerHTML = arr.map(function (c) {
-        var last = c.messages[c.messages.length - 1] || { role: '', text: '' };
+      var arr = sorted();
+      $('list-empty').style.display = arr.length ? 'none' : 'block';
+      $('list').innerHTML = arr.map(function(c) {
+        var last = c.messages[c.messages.length - 1] || {
+          role: '',
+          text: ''
+        };
         var who = last.role === 'user' ? 'Khách' : (last.role === 'agent' ? 'NV' : 'Bot');
         var badge = c.mode === 'human' ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-gold/25 text-gold-deep">' + (c.assignedTo ? esc(c.assignedTo) : 'NV') + '</span>' : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Auto</span>';
         return '<button data-cid="' + c.cid + '" class="w-full text-left px-4 py-3 border-b border-ink/5 hover:bg-ink/5 ' + (c.cid === current ? 'bg-ink/10' : '') + '"><div class="flex items-center gap-2"><span class="font-600 text-sm truncate">Khách ' + esc(c.cid.slice(-4)) + '</span>' + badge + '<span class="ml-auto text-[10px] text-ink-soft">' + timeStr(c.updatedAt) + '</span></div><div class="text-xs text-ink-soft truncate mt-0.5">' + esc(who) + ': ' + esc(last.text) + '</div></button>';
       }).join('');
-      document.querySelectorAll('#list [data-cid]').forEach(function (b) { b.onclick = function () { select(b.getAttribute('data-cid')); }; });
+      document.querySelectorAll('#list [data-cid]').forEach(function(b) {
+        b.onclick = function() {
+          select(b.getAttribute('data-cid'));
+        };
+      });
     }
+
     function renderConv() {
       var has = !!current && convs[current];
       $('conv-empty').style.display = has ? 'none' : 'grid';
       $('conv').classList.toggle('hidden', !has);
-      $('conv-header').classList.toggle('hidden', !has); $('conv-header').classList.toggle('flex', has);
-      $('reply-form').classList.toggle('hidden', !has); $('reply-form').classList.toggle('flex', has);
+      $('conv-header').classList.toggle('hidden', !has);
+      $('conv-header').classList.toggle('flex', has);
+      $('reply-form').classList.toggle('hidden', !has);
+      $('reply-form').classList.toggle('flex', has);
       if (!has) return;
       var c = convs[current];
       $('conv-title').textContent = 'Khách ' + current.slice(-4);
       var mEl = $('conv-mode');
       mEl.textContent = c.mode === 'human' ? ('● Đang phụ trách: ' + (c.assignedTo || 'NV') + (c.assignedTo === me ? ' (bạn)' : '')) : '○ Bot tự động đang trả lời';
       mEl.className = 'text-xs ' + (c.mode === 'human' ? 'text-gold-deep' : 'text-emerald-600');
-      $('conv').innerHTML = c.messages.map(function (mm) {
+      $('conv').innerHTML = c.messages.map(function(mm) {
         var isUser = mm.role === 'user';
         var side = isUser ? 'justify-start' : 'justify-end';
         var label = mm.role === 'agent' ? esc(mm.agentName || 'Nhân viên') : (mm.role === 'bot' ? 'Bot' : '');
@@ -808,19 +1573,83 @@
         var bg = isUser ? 'bg-paper ring-1 ring-ink/10 text-ink' : (mm.role === 'agent' ? 'bg-gold text-ink' : 'bg-crimson text-cream');
         return '<div class="flex ' + side + '"><div class="max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm whitespace-pre-wrap break-words ' + bg + '">' + tag + esc(mm.text) + '</div></div>';
       }).join('');
-      var cc = $('conv'); cc.scrollTop = cc.scrollHeight;
+      var cc = $('conv');
+      cc.scrollTop = cc.scrollHeight;
     }
-    function select(cid) { current = cid; renderList(); renderConv(); }
-    $('btn-takeover').addEventListener('click', function () { if (current) send({ type: 'set_mode', cid: current, mode: 'human' }); });
-    $('btn-release').addEventListener('click', function () { if (current) send({ type: 'set_mode', cid: current, mode: 'auto' }); });
-    var rInput = $('reply-input'), typingTimer = null;
-    rInput.addEventListener('input', function () { rInput.style.height = 'auto'; rInput.style.height = Math.min(rInput.scrollHeight, 128) + 'px'; if (current) { send({ type: 'agent_typing', cid: current, on: true }); clearTimeout(typingTimer); typingTimer = setTimeout(function () { send({ type: 'agent_typing', cid: current, on: false }); }, 1200); } });
-    rInput.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('reply-form').requestSubmit(); } });
-    $('reply-form').addEventListener('submit', function (e) { e.preventDefault(); var t = (rInput.value || '').trim(); if (!t || !current) return; rInput.value = ''; rInput.style.height = 'auto'; send({ type: 'agent_typing', cid: current, on: false }); send({ type: 'agent_msg', cid: current, text: t }); });
+
+    function select(cid) {
+      current = cid;
+      renderList();
+      renderConv();
+    }
+    $('btn-takeover').addEventListener('click', function() {
+      if (current) send({
+        type: 'set_mode',
+        cid: current,
+        mode: 'human'
+      });
+    });
+    $('btn-release').addEventListener('click', function() {
+      if (current) send({
+        type: 'set_mode',
+        cid: current,
+        mode: 'auto'
+      });
+    });
+    var rInput = $('reply-input'),
+      typingTimer = null;
+    rInput.addEventListener('input', function() {
+      rInput.style.height = 'auto';
+      rInput.style.height = Math.min(rInput.scrollHeight, 128) + 'px';
+      if (current) {
+        send({
+          type: 'agent_typing',
+          cid: current,
+          on: true
+        });
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(function() {
+          send({
+            type: 'agent_typing',
+            cid: current,
+            on: false
+          });
+        }, 1200);
+      }
+    });
+    rInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        $('reply-form').requestSubmit();
+      }
+    });
+    $('reply-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var t = (rInput.value || '').trim();
+      if (!t || !current) return;
+      rInput.value = '';
+      rInput.style.height = 'auto';
+      send({
+        type: 'agent_typing',
+        cid: current,
+        on: false
+      });
+      send({
+        type: 'agent_msg',
+        cid: current,
+        text: t
+      });
+    });
 
     /* ---------- start ---------- */
-    function startApp() { showApp(); go('overview'); connect(); }
-    if (token) startApp(); else showLogin();
+    function startApp() {
+      showApp();
+      go('overview');
+      connect();
+    }
+    if (token) startApp();
+    else showLogin();
   </script>
 </body>
+
 </html>

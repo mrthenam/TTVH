@@ -179,8 +179,14 @@ function jobSummary(d) {
       .map(p => ({ code: p, name: recruit.POS_NAME[p] }))
   };
 }
-app.get('/api/jobdata/summary', authREST, async (req, res) => { res.json(jobSummary(jobData)); });
+// Nạp lại jobData từ DB (nguồn sự thật) — tránh trang trống do bộ nhớ RAM rỗng/cũ.
+async function refreshJobData() {
+  try { jobData = await store.getJobData(); } catch (e) { console.error('[jobdata] reload', e.message); }
+  return jobData;
+}
+app.get('/api/jobdata/summary', authREST, async (req, res) => { await refreshJobData(); res.json(jobSummary(jobData)); });
 app.get('/api/jobdata/full', authREST, async (req, res) => {
+  await refreshJobData();
   if (!jobData) return res.json({ hasData: false });
   res.json({ hasData: true, summary: jobSummary(jobData), stores: jobData.stores, jobs: jobData.jobs });
 });
@@ -299,6 +305,7 @@ function isExitIntent(text) {
 
 /* Luồng tuyển dụng nhiều bước. Trả về câu trả lời, hoặc null để nhường cho preset/Gemini. */
 async function handleRecruit(cid, text) {
+  if (!jobData) { try { jobData = await store.getJobData(); } catch (e) {} } // lazy-load từ DB
   if (!jobData || !jobData.stores || !jobData.stores.length) return null; // chưa có dữ liệu
   let state = recruitStates.get(cid);
 
@@ -454,15 +461,21 @@ wss.on('connection', (ws) => {
 
 async function start() {
   let info;
-  try {
-    info = await store.init();
-  } catch (e) {
-    if (store.usePg) {
-      console.error('⚠ Không kết nối được Postgres: ' + e.message);
-      console.error('  → Tạm dùng JSON (data/store.json). Hãy tạo DB/role rồi khởi động lại để dùng Postgres.');
+  if (store.usePg) {
+    // Thử kết nối Postgres nhiều lần — tránh fallback nhầm sang JSON tạm khi DB khởi động chậm
+    // (nếu lỡ chạy JSON tạm thì dữ liệu upload sẽ MẤT khi redeploy).
+    let lastErr = null;
+    for (let attempt = 1; attempt <= 8; attempt++) {
+      try { info = await store.init(); lastErr = null; break; }
+      catch (e) { lastErr = e; console.error('⚠ Postgres chưa sẵn sàng (lần ' + attempt + '/8): ' + e.message); await delay(3000); }
+    }
+    if (lastErr) {
+      console.error('✖ KHÔNG kết nối được Postgres sau nhiều lần thử → tạm dùng JSON. ⚠ DỮ LIỆU SẼ MẤT KHI REDEPLOY!');
       store = require('./lib/store-json');
       info = await store.init();
-    } else throw e;
+    }
+  } else {
+    info = await store.init();
   }
   // tạo tài khoản nhân viên đầu tiên nếu DB trống
   const du = process.env.AGENT_DEFAULT_USER || 'admin';
