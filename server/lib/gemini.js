@@ -46,4 +46,23 @@ async function ask(messages) {
   return text || 'Mình chưa rõ ý bạn lắm, bạn nói thêm một chút giúp mình nhé!';
 }
 
-module.exports = { ask, hasKey, SYSTEM_PROMPT, MODEL };
+/* Hoàn tất 1 prompt đơn (dùng cho tóm tắt đánh giá, báo cáo onboarding...). */
+async function complete(prompt, opts) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return null;
+  opts = opts || {};
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: { temperature: opts.temperature != null ? opts.temperature : 0.4, maxOutputTokens: opts.maxOutputTokens || 800 }
+  };
+  if (opts.system) body.system_instruction = { parts: [{ text: opts.system }] };
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' +
+    encodeURIComponent(MODEL) + ':generateContent?key=' + encodeURIComponent(key);
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!res.ok) { let d = ''; try { d = (await res.json()).error.message; } catch (e) {} throw new Error('Gemini HTTP ' + res.status + (d ? ': ' + d : '')); }
+  const j = await res.json();
+  const parts = j && j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts;
+  return (parts ? parts.map(p => p.text || '').join('').trim() : '') || '';
+}
+
+module.exports = { ask, complete, hasKey, SYSTEM_PROMPT, MODEL };

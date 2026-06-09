@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chào mừng bạn — Onboarding Thịnh Thế Vinh Hoa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { cream:'#FBF7F0', sand:'#F3EADb', paper:'#FFFFFF', ink:'#1B1714', 'ink-soft':'#6A5F54', gold:'#C19A2B', 'gold-deep':'#937218', crimson:'#A8131C', 'crimson-deep':'#7C0E15' },
+      fontFamily: { display:['"Playfair Display"','serif'], sans:['"Be Vietnam Pro"','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 14px 40px -18px rgba(124,14,21,0.20)' } } } };
+  </script>
+  <style>body{background:#FBF7F0;font-family:'Be Vietnam Pro',sans-serif;color:#1B1714}</style>
+</head>
+<body>
+  <header class="bg-gradient-to-r from-crimson-deep via-crimson to-crimson-deep text-cream">
+    <div class="max-w-3xl mx-auto px-5 py-7 flex items-center gap-3">
+      <img src="images/logos/ttvh.jpg" class="w-12 h-12 rounded-xl object-cover ring-1 ring-cream/30" />
+      <div><div class="font-display text-xl font-700">Thịnh Thế Vinh Hoa</div><div class="text-cream/70 text-sm">Chào mừng nhân viên mới 🎉</div></div>
+    </div>
+  </header>
+
+  <main id="wrap" class="max-w-3xl mx-auto px-5 py-8">
+    <p id="loading" class="text-ink-soft text-center py-16">Đang tải thông tin…</p>
+    <div id="content" class="hidden space-y-5"></div>
+    <p id="error" class="hidden text-center py-16 text-crimson">Link không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ HR.</p>
+  </main>
+
+  <footer class="text-center text-xs text-ink-soft py-8">© <span id="yr"></span> Thịnh Thế Vinh Hoa · Hotline: 028 7108 0719 · hr@maycha.com.vn</footer>
+
+  <script>
+    var $ = function (id) { return document.getElementById(id); };
+    function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+    function fmtDate(ts){try{return ts?new Date(ts).toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}):'—';}catch(e){return '—';}}
+    $('yr').textContent = new Date().getFullYear();
+    var token = new URLSearchParams(location.search).get('token') || '';
+
+    var RULES = [
+      'Đi làm đúng giờ theo ca được phân công; báo trước cho quản lý nếu nghỉ/đổi ca.',
+      'Mặc đồng phục, đeo bảng tên, giữ vệ sinh cá nhân và khu vực làm việc.',
+      'Tuân thủ quy trình vệ sinh an toàn thực phẩm (ATVSTP).',
+      'Thái độ thân thiện, lịch sự với khách hàng và đồng nghiệp.',
+      'Bảo mật thông tin nội bộ, công thức, doanh thu của công ty.',
+      'Không sử dụng điện thoại riêng trong giờ phục vụ khách.'
+    ];
+
+    function card(title, inner){ return '<div class="bg-paper rounded-2xl ring-1 ring-ink/10 shadow-soft p-5"><div class="font-display text-lg font-700 text-crimson-deep mb-3">'+title+'</div>'+inner+'</div>'; }
+    function row(label, val){ return '<div class="flex gap-2 py-1.5 border-b border-ink/5 last:border-0"><span class="text-ink-soft w-36 shrink-0">'+label+'</span><span class="font-600">'+esc(val||'—')+'</span></div>'; }
+
+    fetch('/api/onboarding/portal/' + encodeURIComponent(token)).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){
+      $('loading').classList.add('hidden'); $('content').classList.remove('hidden');
+      var info = card('📌 Thông tin nhận việc',
+        row('Họ tên', d.fullName) + row('Vị trí', d.position) + row('Ngày nhận việc', fmtDate(d.startDate))
+        + row('Địa điểm', d.workplace || d.branch) + row('Ca làm', d.shift) + row('Loại hợp đồng', d.contractType)
+        + row('Người liên hệ/hướng dẫn', d.contactName));
+      var docs = card('📄 Giấy tờ cần chuẩn bị &amp; nộp',
+        (d.docs && d.docs.length ? '<ul class="space-y-1.5">'+d.docs.map(function(x){return '<li class="flex gap-2"><span class="text-crimson">•</span><span>'+esc(x)+'</span></li>';}).join('')+'</ul>' : '<p class="text-ink-soft">Không có.</p>'));
+      var rules = card('📋 Nội quy cơ bản', '<ul class="space-y-1.5">'+RULES.map(function(x){return '<li class="flex gap-2"><span class="text-gold-deep">✓</span><span>'+esc(x)+'</span></li>';}).join('')+'</ul>');
+      var train = card('🎓 Tài liệu &amp; nội dung training',
+        (d.trainings && d.trainings.length ? '<ul class="space-y-1.5">'+d.trainings.map(function(x){return '<li class="flex gap-2"><span class="text-crimson">▶</span><span>'+esc(x)+'</span></li>';}).join('')+'</ul>' : '<p class="text-ink-soft">Sẽ được người hướng dẫn cung cấp khi nhận việc.</p>')
+        + '<p class="text-xs text-ink-soft mt-3">Người hướng dẫn sẽ gửi tài liệu/video chi tiết trong buổi đào tạo hội nhập.</p>');
+
+      var confirm = d.confirmed
+        ? '<div class="bg-emerald-50 ring-1 ring-emerald-200 rounded-2xl p-5 text-center text-emerald-700 font-600">✅ Bạn đã xác nhận đọc thông tin onboarding. Hẹn gặp bạn tại cửa hàng!</div>'
+        : '<div class="bg-paper rounded-2xl ring-1 ring-ink/10 shadow-soft p-5 text-center"><p class="mb-3">Vui lòng đọc kỹ các thông tin trên và xác nhận để HR &amp; người hướng dẫn được biết.</p><button id="confirm-btn" class="rounded-full bg-crimson text-cream px-7 py-3 font-600 hover:bg-crimson-deep">Tôi đã đọc &amp; xác nhận</button><p id="confirm-msg" class="text-sm mt-2"></p></div>';
+
+      $('content').innerHTML = '<div class="bg-sand rounded-2xl p-4 text-center"><span class="font-display text-xl font-700">Xin chào '+esc(d.fullName)+'! 👋</span><p class="text-ink-soft text-sm mt-1">Rất vui được chào đón bạn gia nhập đại gia đình Thịnh Thế Vinh Hoa.</p></div>'
+        + info + docs + rules + train + confirm;
+
+      var btn = $('confirm-btn');
+      if (btn) btn.onclick = async function(){
+        btn.disabled = true; btn.textContent = 'Đang gửi…';
+        try { var r = await fetch('/api/onboarding/portal/'+encodeURIComponent(token)+'/confirm',{method:'POST'}); if(!r.ok) throw 0;
+          btn.parentElement.innerHTML = '<div class="text-emerald-700 font-600">✅ Cảm ơn bạn! Đã xác nhận thành công. Hẹn gặp bạn tại cửa hàng!</div>'; }
+        catch(e){ btn.disabled=false; btn.textContent='Tôi đã đọc & xác nhận'; $('confirm-msg').textContent='Có lỗi, vui lòng thử lại.'; $('confirm-msg').className='text-sm mt-2 text-crimson'; }
+      };
+    }).catch(function(){ $('loading').classList.add('hidden'); $('error').classList.remove('hidden'); });
+  </script>
+</body>
+</html>

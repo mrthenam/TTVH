@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onboarding nhân viên — Thịnh Thế Vinh Hoa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { cream:'#FBF7F0', sand:'#F3EADb', paper:'#FFFFFF', ink:'#1B1714', 'ink-soft':'#6A5F54', gold:'#C19A2B', 'gold-deep':'#937218', crimson:'#A8131C', 'crimson-deep':'#7C0E15' },
+      fontFamily: { display:['"Playfair Display"','serif'], sans:['"Be Vietnam Pro"','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 14px 40px -18px rgba(124,14,21,0.20)' } } } };
+  </script>
+  <style>
+    body{background:#FBF7F0;font-family:'Be Vietnam Pro',sans-serif;color:#1B1714}
+    .nav-btn.active{background:#A8131C;color:#FBF7F0}
+    ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:9px}
+    .inp{width:100%;border:1px solid rgba(27,23,20,.15);border-radius:.6rem;padding:.55rem .8rem;outline:none;font-size:.92rem}
+    .inp:focus{border-color:#A8131C}
+    .badge{display:inline-block;font-size:.7rem;font-weight:600;padding:.15rem .55rem;border-radius:999px}
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login" class="fixed inset-0 grid place-items-center bg-cream z-50" style="display:none">
+    <form id="login-form" class="bg-paper p-7 rounded-3xl shadow-soft ring-1 ring-ink/10 w-[340px]">
+      <h1 class="font-display text-2xl font-700 text-crimson-deep mb-1">Onboarding</h1>
+      <p class="text-sm text-ink-soft mb-4">Đăng nhập bằng tài khoản nhân sự</p>
+      <input id="li-user" class="inp mb-2" placeholder="Tên đăng nhập" />
+      <input id="li-pass" type="password" class="inp mb-3" placeholder="Mật khẩu" />
+      <button class="w-full rounded-full bg-crimson text-cream py-2.5 font-600 hover:bg-crimson-deep">Đăng nhập</button>
+      <p id="li-err" class="hidden text-sm text-crimson mt-2"></p>
+      <a href="agent.html" class="block text-center text-xs text-ink-soft mt-3 hover:text-crimson">← Về Dashboard chính</a>
+    </form>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="w-60 bg-crimson-deep text-cream/90 p-4 flex flex-col shrink-0">
+      <div class="flex items-center gap-2 mb-6">
+        <img src="images/logos/ttvh.jpg" class="w-10 h-10 rounded-xl object-cover" />
+        <div><div class="font-display font-700 text-cream leading-tight">Onboarding</div><div class="text-[11px] text-cream/60">Nhân viên mới</div></div>
+      </div>
+      <nav class="space-y-1 text-sm">
+        <button data-go="dashboard" class="nav-btn active w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-cream/10 text-left">📊 Dashboard</button>
+        <button data-go="list" class="nav-btn w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-cream/10 text-left">📋 Danh sách NV</button>
+        <button data-go="report" class="nav-btn w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-cream/10 text-left">🤖 Báo cáo AI</button>
+      </nav>
+      <div class="mt-auto text-xs text-cream/60">
+        <div id="me-info" class="mb-2"></div>
+        <a href="agent.html" class="block hover:text-cream">Dashboard chính</a>
+        <button id="logout" class="mt-1 hover:text-cream">Đăng xuất</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 min-w-0 flex flex-col">
+      <header class="h-14 bg-paper border-b border-ink/10 flex items-center gap-3 px-5 shrink-0">
+        <h2 id="title" class="font-display text-lg font-700">Dashboard</h2>
+        <div class="ml-auto flex items-center gap-3">
+          <div class="relative">
+            <button id="bell" class="relative w-9 h-9 grid place-items-center rounded-full hover:bg-ink/5 text-lg">🔔
+              <span id="bell-dot" class="hidden absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-crimson text-cream text-[10px] grid place-items-center"></span>
+            </button>
+            <div id="notif-panel" class="hidden absolute right-0 mt-2 w-80 max-h-96 overflow-auto bg-paper rounded-2xl ring-1 ring-ink/10 shadow-soft z-30 p-2"></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-auto p-5">
+        <!-- DASHBOARD -->
+        <section data-panel="dashboard">
+          <div id="ob-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5"></div>
+          <div class="grid lg:grid-cols-2 gap-4">
+            <div class="bg-paper rounded-2xl ring-1 ring-ink/10 p-4"><div class="font-600 mb-2">Phân bố trạng thái</div><div class="h-60"><canvas id="ch-status"></canvas></div></div>
+            <div class="bg-paper rounded-2xl ring-1 ring-ink/10 p-4">
+              <div class="font-600 mb-2">Chi nhánh onboarding chậm (có task quá hạn)</div>
+              <div id="ob-slow" class="text-sm"></div>
+              <div class="font-600 mt-4 mb-2">Vị trí có tỷ lệ nghỉ sớm cao</div>
+              <div id="ob-leave" class="text-sm"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LIST -->
+        <section data-panel="list" class="hidden">
+          <div class="flex items-center gap-3 mb-4">
+            <input id="ob-search" class="inp max-w-xs" placeholder="🔎 Tìm tên / vị trí…" />
+            <button id="btn-new" class="ml-auto rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 hover:bg-crimson-deep hidden">+ Tạo nhân viên mới</button>
+          </div>
+          <div class="bg-paper rounded-2xl ring-1 ring-ink/10 overflow-hidden">
+            <div class="overflow-auto max-h-[70vh]">
+              <table class="w-full text-sm">
+                <thead class="bg-sand text-ink-soft text-xs sticky top-0"><tr>
+                  <th class="p-3 text-left">Họ tên</th><th class="p-3 text-left">Vị trí</th><th class="p-3 text-left">Chi nhánh</th>
+                  <th class="p-3 text-left">Ngày bắt đầu</th><th class="p-3 text-left">Tiến độ</th><th class="p-3 text-left">Trạng thái</th>
+                </tr></thead>
+                <tbody id="ob-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <p id="ob-empty" class="text-ink-soft mt-4 hidden">Chưa có hồ sơ onboarding nào.</p>
+        </section>
+
+        <!-- DETAIL -->
+        <section data-panel="detail" class="hidden"></section>
+
+        <!-- REPORT -->
+        <section data-panel="report" class="hidden">
+          <button id="btn-report" class="rounded-full bg-crimson text-cream px-5 py-2.5 text-sm font-600 hover:bg-crimson-deep">🤖 Tạo báo cáo onboarding bằng AI</button>
+          <div id="report-out" class="mt-4 bg-paper rounded-2xl ring-1 ring-ink/10 p-5 whitespace-pre-line text-sm leading-relaxed hidden"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL form -->
+  <div id="modal" class="hidden fixed inset-0 z-40 bg-black/50 items-center justify-center p-4">
+    <div class="bg-paper rounded-3xl shadow-soft w-full max-w-2xl max-h-[90vh] overflow-auto p-6">
+      <div class="flex items-center mb-4"><h3 id="modal-title" class="font-display text-xl font-700">Tạo nhân viên mới</h3><button id="modal-close" class="ml-auto text-2xl leading-none text-ink-soft hover:text-crimson">&times;</button></div>
+      <form id="ob-form" class="grid sm:grid-cols-2 gap-3">
+        <input type="hidden" id="f-id" />
+        <label class="text-sm sm:col-span-2">Họ tên *<input id="f-fullName" class="inp mt-1" required /></label>
+        <label class="text-sm">Số điện thoại<input id="f-phone" class="inp mt-1" /></label>
+        <label class="text-sm">Email<input id="f-email" type="email" class="inp mt-1" /></label>
+        <label class="text-sm">Vị trí<select id="f-position" class="inp mt-1"></select></label>
+        <label class="text-sm">Phòng ban<input id="f-department" class="inp mt-1" placeholder="VD: Vận hành, Marketing…" /></label>
+        <label class="text-sm">Chi nhánh<input id="f-branch" class="inp mt-1" placeholder="VD: MAYCHA Cao Thắng" /></label>
+        <label class="text-sm">Ngày bắt đầu làm<input id="f-startDate" type="date" class="inp mt-1" /></label>
+        <label class="text-sm">Quản lý trực tiếp (tên)<input id="f-managerName" class="inp mt-1" /></label>
+        <label class="text-sm">Tài khoản quản lý (để nhận TB)<input id="f-managerUser" class="inp mt-1" placeholder="username đăng nhập" /></label>
+        <label class="text-sm">Người hướng dẫn (tên)<input id="f-mentorName" class="inp mt-1" /></label>
+        <label class="text-sm">Tài khoản người hướng dẫn<input id="f-mentorUser" class="inp mt-1" placeholder="username đăng nhập" /></label>
+        <label class="text-sm">Loại hợp đồng<select id="f-contractType" class="inp mt-1"><option>Thử việc</option><option>Chính thức</option><option>Thời vụ</option><option>Bán thời gian (Part-time)</option></select></label>
+        <label class="text-sm">Ca làm<input id="f-shift" class="inp mt-1" placeholder="VD: Ca sáng 8-16h" /></label>
+        <label class="text-sm sm:col-span-2">Địa điểm làm việc<input id="f-workplace" class="inp mt-1" placeholder="Địa chỉ cửa hàng/văn phòng" /></label>
+        <label class="text-sm sm:col-span-2">Ghi chú<textarea id="f-note" rows="2" class="inp mt-1"></textarea></label>
+        <div class="sm:col-span-2 flex gap-2 mt-1">
+          <button class="rounded-full bg-crimson text-cream px-5 py-2.5 text-sm font-600 hover:bg-crimson-deep">Lưu</button>
+          <button type="button" id="modal-cancel" class="rounded-full bg-ink/10 px-4 py-2.5 text-sm font-600">Huỷ</button>
+          <span id="f-msg" class="text-sm self-center"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="onboarding-app.js"></script>
+</body>
+</html>

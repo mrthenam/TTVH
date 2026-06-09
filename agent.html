@@ -103,6 +103,7 @@
         <button data-go="jobposts" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📢</span> Tin tuyển dụng</button>
         <button data-go="jobs" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🤖</span> Data tuyển dụng</button>
         <button data-go="staff" id="nav-staff" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">👥</span> Nhân viên</button>
+        <a href="onboarding.html" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🧑‍🎓</span> Onboarding NV</a>
         <button data-go="account" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">⚙️</span> Tài khoản</button>
       </nav>
       <div class="p-3 border-t border-cream/15 text-sm">
@@ -1311,15 +1312,31 @@
         var j = await (await fetch('/api/agents', {
           headers: authHeaders()
         })).json();
+        var OBROLES = [['', '— (không onboarding)'], ['hr', 'HR'], ['bod', 'BOD'], ['branch_manager', 'Quản lý chi nhánh'], ['dept_head', 'Trưởng bộ phận'], ['mentor', 'Người hướng dẫn'], ['admin', 'Admin/AI Leader']];
         $('agents-list').innerHTML = (j.agents || []).map(function(a) {
-          return '<div class="flex items-center gap-2 py-3 border-b border-ink/10 last:border-0"><div class="min-w-0"><div class="font-600 truncate">' + esc(a.name) + ' <span class="text-ink-soft font-400">@' + esc(a.username) + '</span></div></div>' +
+          return '<div class="py-3 border-b border-ink/10 last:border-0">' +
+            '<div class="flex items-center gap-2"><div class="min-w-0"><div class="font-600 truncate">' + esc(a.name) + ' <span class="text-ink-soft font-400">@' + esc(a.username) + '</span></div></div>' +
             '<div class="ml-auto flex items-center gap-2 shrink-0">' +
             '<select data-role="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-cream ring-1 ring-ink/15">' +
             '<option value="agent"' + (a.role !== 'admin' ? ' selected' : '') + '>Nhân viên</option>' +
             '<option value="admin"' + (a.role === 'admin' ? ' selected' : '') + '>Quản trị (admin)</option></select>' +
             '<button data-reset="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-ink/10 hover:bg-ink/20">Đặt lại MK</button>' +
-            '<button data-del="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>';
+            '<button data-del="' + esc(a.username) + '" class="text-xs px-2 py-1 rounded bg-crimson/10 text-crimson hover:bg-crimson/20">Xoá</button></div></div>' +
+            '<div class="flex flex-wrap items-center gap-2 mt-2 text-xs bg-cream/60 rounded-lg p-2">' +
+            '<span class="text-ink-soft">Onboarding:</span>' +
+            '<select data-obrole="' + esc(a.username) + '" class="px-2 py-1 rounded bg-white ring-1 ring-ink/15">' + OBROLES.map(function(o) { return '<option value="' + o[0] + '"' + ((a.obRole || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
+            '<input data-obbranch="' + esc(a.username) + '" value="' + esc(a.branch || '') + '" placeholder="Chi nhánh" class="px-2 py-1 rounded bg-white ring-1 ring-ink/15 w-32" />' +
+            '<input data-obdept="' + esc(a.username) + '" value="' + esc(a.department || '') + '" placeholder="Phòng ban" class="px-2 py-1 rounded bg-white ring-1 ring-ink/15 w-32" />' +
+            '<button data-obsave="' + esc(a.username) + '" class="px-2 py-1 rounded bg-crimson text-cream font-600">Lưu phân quyền</button></div></div>';
         }).join('');
+        document.querySelectorAll('#agents-list [data-obsave]').forEach(function(b) {
+          b.onclick = async function() {
+            var u = b.getAttribute('data-obsave');
+            var body = { obRole: document.querySelector('[data-obrole="' + u + '"]').value, branch: document.querySelector('[data-obbranch="' + u + '"]').value, department: document.querySelector('[data-obdept="' + u + '"]').value };
+            var r = await fetch('/api/agents/' + encodeURIComponent(u) + '/onboarding-profile', { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) });
+            b.textContent = r.ok ? '✓ Đã lưu' : 'Lỗi'; setTimeout(function() { b.textContent = 'Lưu phân quyền'; }, 1500);
+          };
+        });
         document.querySelectorAll('#agents-list [data-role]').forEach(function(s) {
           s.onchange = async function() {
             var u = s.getAttribute('data-role');

@@ -17,6 +17,8 @@ function loadSync() {
   data.gallery = data.gallery || [];
   data.jobdata = data.jobdata || null;
   data.jobposts = data.jobposts || [];
+  data.onboarding = data.onboarding || [];
+  data.notifications = data.notifications || [];
 }
 
 let timer = null;
@@ -87,19 +89,40 @@ async function listConversations() {
 }
 
 /* ---------- agents ---------- */
-async function getAgentByUsername(username) {
-  const a = data.agents[username];
-  return a ? { username: a.username, passwordHash: a.passwordHash, name: a.name, role: a.role || 'agent' } : null;
-}
+function mapAgent(a) { return { username: a.username, passwordHash: a.passwordHash, name: a.name, role: a.role || 'agent', obRole: a.obRole || '', branch: a.branch || '', department: a.department || '' }; }
+async function getAgentByUsername(username) { const a = data.agents[username]; return a ? mapAgent(a) : null; }
 async function createAgent(username, passwordHash, name, role) {
   const ex = data.agents[username];
-  data.agents[username] = { username, passwordHash, name: name || username, role: role || (ex && ex.role) || 'agent', createdAt: (ex && ex.createdAt) || Date.now() };
+  data.agents[username] = { username, passwordHash, name: name || username, role: role || (ex && ex.role) || 'agent', obRole: (ex && ex.obRole) || '', branch: (ex && ex.branch) || '', department: (ex && ex.department) || '', createdAt: (ex && ex.createdAt) || Date.now() };
   persist();
   return { username, name: data.agents[username].name, role: data.agents[username].role };
 }
+async function updateAgentProfile(username, f) {
+  const a = data.agents[username]; if (!a) return false;
+  ['name', 'obRole', 'branch', 'department'].forEach(k => { if (f[k] !== undefined) a[k] = f[k]; });
+  persist(); return true;
+}
 async function updatePassword(username, passwordHash) { const a = data.agents[username]; if (!a) return false; a.passwordHash = passwordHash; persist(); return true; }
 async function deleteAgent(username) { if (!data.agents[username]) return false; delete data.agents[username]; persist(); return true; }
-async function listAgents() { return Object.values(data.agents).map(a => ({ username: a.username, name: a.name, role: a.role || 'agent', createdAt: a.createdAt || 0 })).sort((a, b) => (a.username > b.username ? 1 : -1)); }
+async function listAgents() { return Object.values(data.agents).map(a => ({ username: a.username, name: a.name, role: a.role || 'agent', obRole: a.obRole || '', branch: a.branch || '', department: a.department || '', createdAt: a.createdAt || 0 })).sort((a, b) => (a.username > b.username ? 1 : -1)); }
+
+/* ---------- onboarding ---------- */
+async function listOnboarding() { return data.onboarding.map(r => JSON.parse(JSON.stringify(r))).sort((a, b) => b.createdAt - a.createdAt); }
+async function getOnboarding(id) { const r = data.onboarding.find(x => x.id === id); return r ? JSON.parse(JSON.stringify(r)) : null; }
+async function getOnboardingByToken(token) { const r = data.onboarding.find(x => x.token === token); return r ? JSON.parse(JSON.stringify(r)) : null; }
+async function saveOnboarding(rec) {
+  const i = data.onboarding.findIndex(x => x.id === rec.id);
+  rec.updatedAt = Date.now();
+  if (i >= 0) data.onboarding[i] = rec; else { rec.createdAt = rec.createdAt || Date.now(); data.onboarding.push(rec); }
+  persist(); return JSON.parse(JSON.stringify(rec));
+}
+async function deleteOnboarding(id) { const n = data.onboarding.length; data.onboarding = data.onboarding.filter(x => x.id !== id); persist(); return data.onboarding.length < n; }
+
+/* ---------- notifications ---------- */
+async function listNotifications() { return data.notifications.map(n => Object.assign({}, n)).sort((a, b) => b.createdAt - a.createdAt); }
+async function createNotification(n) { n.createdAt = n.createdAt || Date.now(); data.notifications.unshift(n); if (data.notifications.length > 1000) data.notifications = data.notifications.slice(0, 1000); persist(); return n; }
+async function markNotificationRead(id) { const n = data.notifications.find(x => x.id === id); if (n) { n.read = true; persist(); } return !!n; }
+async function notificationExists(dedupeKey) { return data.notifications.some(n => n.dedupeKey === dedupeKey); }
 async function countAgents() { return Object.keys(data.agents).length; }
 
 /* ---------- carousel ---------- */
@@ -167,7 +190,9 @@ async function deletePost(id) { const n = data.posts.length; data.posts = data.p
 
 module.exports = {
   init, genId, getConv, addMessage, setMode, listConversations,
-  getAgentByUsername, createAgent, updatePassword, deleteAgent, listAgents, countAgents,
+  getAgentByUsername, createAgent, updateAgentProfile, updatePassword, deleteAgent, listAgents, countAgents,
+  listOnboarding, getOnboarding, getOnboardingByToken, saveOnboarding, deleteOnboarding,
+  listNotifications, createNotification, markNotificationRead, notificationExists,
   getCarousel, addCarouselItem, deleteCarouselItem, reorderCarousel,
   getGallery, addGalleryItem, deleteGalleryItem, reorderGallery,
   getJobData, setJobData,

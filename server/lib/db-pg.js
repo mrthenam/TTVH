@@ -15,6 +15,24 @@ CREATE TABLE IF NOT EXISTS agents (
   created_at BIGINT NOT NULL
 );
 ALTER TABLE agents ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'agent';
+ALTER TABLE agents ADD COLUMN IF NOT EXISTS ob_role TEXT DEFAULT '';
+ALTER TABLE agents ADD COLUMN IF NOT EXISTS branch TEXT DEFAULT '';
+ALTER TABLE agents ADD COLUMN IF NOT EXISTS department TEXT DEFAULT '';
+CREATE TABLE IF NOT EXISTS onboarding (
+  id TEXT PRIMARY KEY,
+  doc JSONB NOT NULL,
+  token TEXT,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_onboarding_token ON onboarding(token);
+CREATE TABLE IF NOT EXISTS notifications (
+  id TEXT PRIMARY KEY,
+  doc JSONB NOT NULL,
+  dedupe_key TEXT,
+  created_at BIGINT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_notif_dedupe ON notifications(dedupe_key);
 CREATE TABLE IF NOT EXISTS conversations (
   cid TEXT PRIMARY KEY,
   mode TEXT NOT NULL DEFAULT 'auto',
@@ -178,9 +196,10 @@ async function listConversations() {
 }
 
 /* agents */
+function mapAgent(r) { return { username: r.username, passwordHash: r.password_hash, name: r.name, role: r.role || 'agent', obRole: r.ob_role || '', branch: r.branch || '', department: r.department || '' }; }
 async function getAgentByUsername(username) {
-  const r = (await pool.query('SELECT username, password_hash, name, role FROM agents WHERE username=$1', [username])).rows[0];
-  return r ? { username: r.username, passwordHash: r.password_hash, name: r.name, role: r.role || 'agent' } : null;
+  const r = (await pool.query('SELECT username, password_hash, name, role, ob_role, branch, department FROM agents WHERE username=$1', [username])).rows[0];
+  return r ? mapAgent(r) : null;
 }
 async function createAgent(username, passwordHash, name, role) {
   await pool.query(
@@ -189,6 +208,19 @@ async function createAgent(username, passwordHash, name, role) {
     [username, passwordHash, name || username, role || 'agent', Date.now()]
   );
   return { username, name: name || username, role: role || 'agent' };
+}
+async function updateAgentProfile(username, f) {
+  const cur = (await pool.query('SELECT name, ob_role, branch, department FROM agents WHERE username=$1', [username])).rows[0];
+  if (!cur) return false;
+  const v = {
+    name: f.name !== undefined ? f.name : cur.name,
+    ob_role: f.obRole !== undefined ? f.obRole : cur.ob_role,
+    branch: f.branch !== undefined ? f.branch : cur.branch,
+    department: f.department !== undefined ? f.department : cur.department
+  };
+  await pool.query('UPDATE agents SET name=$2, ob_role=$3, branch=$4, department=$5 WHERE username=$1',
+    [username, v.name, v.ob_role, v.branch, v.department]);
+  return true;
 }
 async function updatePassword(username, passwordHash) {
   const r = await pool.query('UPDATE agents SET password_hash=$2 WHERE username=$1', [username, passwordHash]);
@@ -199,10 +231,48 @@ async function deleteAgent(username) {
   return r.rowCount > 0;
 }
 async function listAgents() {
-  return (await pool.query('SELECT username, name, role, created_at FROM agents ORDER BY username ASC')).rows
-    .map(r => ({ username: r.username, name: r.name, role: r.role || 'agent', createdAt: Number(r.created_at) }));
+  return (await pool.query('SELECT username, name, role, ob_role, branch, department, created_at FROM agents ORDER BY username ASC')).rows
+    .map(r => ({ username: r.username, name: r.name, role: r.role || 'agent', obRole: r.ob_role || '', branch: r.branch || '', department: r.department || '', createdAt: Number(r.created_at) }));
 }
 async function countAgents() { return Number((await pool.query('SELECT COUNT(*)::int AS n FROM agents')).rows[0].n); }
+
+/* ---------- onboarding ---------- */
+function mapOb(r) { return Object.assign({}, r.doc, { id: r.id, token: r.token, createdAt: Number(r.created_at), updatedAt: Number(r.updated_at) }); }
+async function listOnboarding() {
+  return (await pool.query('SELECT * FROM onboarding ORDER BY created_at DESC')).rows.map(mapOb);
+}
+async function getOnboarding(id) { const r = (await pool.query('SELECT * FROM onboarding WHERE id=$1', [id])).rows[0]; return r ? mapOb(r) : null; }
+async function getOnboardingByToken(token) { const r = (await pool.query('SELECT * FROM onboarding WHERE token=$1', [token])).rows[0]; return r ? mapOb(r) : null; }
+async function saveOnboarding(rec) {
+  const now = Date.now();
+  rec.createdAt = rec.createdAt || now; rec.updatedAt = now;
+  const doc = Object.assign({}, rec); delete doc.id; delete doc.token; delete doc.createdAt; delete doc.updatedAt;
+  await pool.query(
+    `INSERT INTO onboarding (id, doc, token, created_at, updated_at) VALUES ($1,$2,$3,$4,$5)
+     ON CONFLICT (id) DO UPDATE SET doc=EXCLUDED.doc, token=EXCLUDED.token, updated_at=EXCLUDED.updated_at`,
+    [rec.id, doc, rec.token || null, rec.createdAt, now]
+  );
+  return getOnboarding(rec.id);
+}
+async function deleteOnboarding(id) { return (await pool.query('DELETE FROM onboarding WHERE id=$1', [id])).rowCount > 0; }
+
+/* ---------- notifications ---------- */
+function mapNotif(r) { return Object.assign({}, r.doc, { id: r.id, createdAt: Number(r.created_at) }); }
+async function listNotifications() { return (await pool.query('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 500')).rows.map(mapNotif); }
+async function createNotification(n) {
+  n.createdAt = n.createdAt || Date.now();
+  const doc = Object.assign({}, n); delete doc.id; delete doc.createdAt;
+  await pool.query('INSERT INTO notifications (id, doc, dedupe_key, created_at) VALUES ($1,$2,$3,$4)', [n.id, doc, n.dedupeKey || null, n.createdAt]);
+  return n;
+}
+async function markNotificationRead(id) {
+  const r = (await pool.query('SELECT doc FROM notifications WHERE id=$1', [id])).rows[0];
+  if (!r) return false;
+  const doc = Object.assign({}, r.doc, { read: true });
+  await pool.query('UPDATE notifications SET doc=$2 WHERE id=$1', [id, doc]);
+  return true;
+}
+async function notificationExists(dedupeKey) { return Number((await pool.query('SELECT COUNT(*)::int AS n FROM notifications WHERE dedupe_key=$1', [dedupeKey])).rows[0].n) > 0; }
 
 /* ---------- carousel ---------- */
 async function getCarousel() {
@@ -322,7 +392,9 @@ async function deletePost(id) { return (await pool.query('DELETE FROM posts WHER
 
 module.exports = {
   init, ensureSchema, importData, getPool, genId, getConv, addMessage, setMode, listConversations,
-  getAgentByUsername, createAgent, updatePassword, deleteAgent, listAgents, countAgents,
+  getAgentByUsername, createAgent, updateAgentProfile, updatePassword, deleteAgent, listAgents, countAgents,
+  listOnboarding, getOnboarding, getOnboardingByToken, saveOnboarding, deleteOnboarding,
+  listNotifications, createNotification, markNotificationRead, notificationExists,
   getCarousel, addCarouselItem, deleteCarouselItem, reorderCarousel,
   getGallery, addGalleryItem, deleteGalleryItem, reorderGallery,
   getJobData, setJobData,

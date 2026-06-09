@@ -16,6 +16,8 @@ const gemini = require('./lib/gemini');
 const auth = require('./lib/auth');
 const recruit = require('./lib/jobdata');
 const geocode = require('./lib/geocode');
+const ob = require('./lib/onboarding');
+const crypto = require('crypto');
 
 let jobData = null;                 // dữ liệu tuyển dụng (nạp lúc khởi động / sau khi upload)
 const recruitStates = new Map();    // cid -> trạng thái luồng tuyển dụng
@@ -105,6 +107,18 @@ app.put('/api/agents/:username/role', authREST, requireAdmin, async (req, res) =
       return res.status(400).json({ error: 'Không thể tự hạ quyền chính mình' });
     await store.createAgent(a.username, a.passwordHash, a.name, role); // upsert giữ mật khẩu & tên
     res.json({ ok: true, username: a.username, role });
+  } catch (e) { res.status(500).json({ error: 'Lỗi máy chủ' }); }
+});
+// Phân quyền onboarding cho nhân viên: obRole + chi nhánh + phòng ban (admin)
+app.put('/api/agents/:username/onboarding-profile', authREST, requireAdmin, async (req, res) => {
+  try {
+    const a = await store.getAgentByUsername(req.params.username);
+    if (!a) return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+    const b = req.body || {};
+    const valid = ['', 'admin', 'hr', 'bod', 'branch_manager', 'dept_head', 'mentor'];
+    const obRole = valid.indexOf(b.obRole) > -1 ? b.obRole : '';
+    await store.updateAgentProfile(a.username, { obRole, branch: String(b.branch || ''), department: String(b.department || '') });
+    res.json({ ok: true, username: a.username, obRole, branch: b.branch || '', department: b.department || '' });
   } catch (e) { res.status(500).json({ error: 'Lỗi máy chủ' }); }
 });
 app.delete('/api/agents/:username', authREST, requireAdmin, async (req, res) => {
@@ -262,6 +276,306 @@ app.delete('/api/jobposts/:id', authREST, requireAdmin, async (req, res) => {
   const ok = await store.deleteJobPost(req.params.id);
   res.status(ok ? 200 : 404).json({ ok });
 });
+
+/* ============================================================
+   ONBOARDING NHÂN VIÊN MỚI
+   ============================================================ */
+// nạp hồ sơ người dùng (obRole/branch/department) sau authREST
+async function authOB(req, res, next) {
+  try {
+    const u = await store.getAgentByUsername(req.agent.sub);
+    if (!u) return res.status(401).json({ error: 'Phiên không hợp lệ' });
+    if (!u.obRole && u.role === 'admin') u.obRole = 'admin';
+    req.user = u;
+    next();
+  } catch (e) { res.status(500).json({ error: 'Lỗi máy chủ' }); }
+}
+function requireOBEdit(req, res, next) { return ob.canEdit(req.user) ? next() : res.status(403).json({ error: 'Chỉ HR/Admin được thao tác' }); }
+
+/* ---- thông báo trong app ---- */
+function ownerRoles(owner) {
+  if (owner === 'Người hướng dẫn') return ['mentor'];
+  if (owner === 'Quản lý chi nhánh' || owner === 'Quản lý ca') return ['branch_manager'];
+  if (owner === 'Trưởng bộ phận') return ['dept_head'];
+  return ['hr'];
+}
+async function notify(n) {
+  try {
+    if (n.dedupeKey && await store.notificationExists(n.dedupeKey)) return null;
+    n.id = ob.uid('nt'); n.read = false; n.createdAt = Date.now();
+    return await store.createNotification(n);
+  } catch (e) { console.error('[notify]', e.message); return null; }
+}
+function notifVisible(user, n) {
+  if (!user) return false;
+  if (user.obRole === 'admin' || user.obRole === 'hr') return true;
+  if (n.user && n.user === user.username) return true;
+  const roles = n.roles || [];
+  if (user.obRole === 'bod') return roles.indexOf('bod') > -1;
+  if (user.obRole === 'branch_manager') return roles.indexOf('branch_manager') > -1 && n.branch && n.branch === user.branch;
+  if (user.obRole === 'dept_head') return roles.indexOf('dept_head') > -1 && n.department && n.department === user.department;
+  if (user.obRole === 'mentor') return roles.indexOf('mentor') > -1 && n.mentorUser === user.username;
+  return false;
+}
+
+app.get('/api/notifications', authREST, authOB, async (req, res) => {
+  const all = await store.listNotifications();
+  res.json({ items: all.filter(n => notifVisible(req.user, n)).slice(0, 100) });
+});
+app.post('/api/notifications/:id/read', authREST, authOB, async (req, res) => { await store.markNotificationRead(req.params.id); res.json({ ok: true }); });
+
+/* ---- meta cho form ---- */
+app.get('/api/onboarding/meta', authREST, authOB, (req, res) => {
+  res.json({
+    positions: ob.POSITIONS, statuses: ob.STATUS, milestones: ob.MILESTONES, groups: ob.GROUPS,
+    me: { username: req.user.username, name: req.user.name, obRole: req.user.obRole || '', branch: req.user.branch || '', department: req.user.department || '' },
+    canEdit: ob.canEdit(req.user)
+  });
+});
+
+/* ---- danh sách (theo phân quyền) ---- */
+app.get('/api/onboarding', authREST, authOB, async (req, res) => {
+  const all = await store.listOnboarding();
+  const list = all.filter(r => ob.canSeeRecord(req.user, r)).map(r => {
+    r.status = ob.deriveStatus(r);
+    const p = ob.checklistProgress(r);
+    return { id: r.id, fullName: r.fullName, position: r.position, positionLabel: ob.POS_LABEL[r.position] || r.position, department: r.department, branch: r.branch, startDate: r.startDate, status: r.status, statusLabel: ob.STATUS[r.status], progress: p, mentorName: r.mentorName, managerName: r.managerName, createdAt: r.createdAt };
+  });
+  res.json({ items: list });
+});
+
+/* ---- chi tiết ---- */
+app.get('/api/onboarding/:id', authREST, authOB, async (req, res) => {
+  const r = await store.getOnboarding(req.params.id);
+  if (!r) return res.status(404).json({ error: 'Không tìm thấy' });
+  if (!ob.canSeeRecord(req.user, r)) return res.status(403).json({ error: 'Không có quyền xem' });
+  r.status = ob.deriveStatus(r);
+  res.json(Object.assign({}, r, { positionLabel: ob.POS_LABEL[r.position] || r.position, statusLabel: ob.STATUS[r.status], progress: ob.checklistProgress(r), portalUrl: '/onboarding-nv.html?token=' + r.token }));
+});
+
+/* ---- tạo onboarding (HR/Admin) ---- */
+app.post('/api/onboarding', authREST, authOB, requireOBEdit, async (req, res) => {
+  const b = req.body || {};
+  const fullName = String(b.fullName || '').trim();
+  if (!fullName) return res.status(400).json({ error: 'Thiếu họ tên' });
+  let start = b.startDate ? (typeof b.startDate === 'number' ? b.startDate : Date.parse(b.startDate)) : Date.now();
+  if (isNaN(start)) start = Date.now();
+  const rec = {
+    id: ob.uid('ob'), token: crypto.randomBytes(12).toString('hex'),
+    fullName, phone: b.phone || '', email: b.email || '',
+    position: b.position || '', department: b.department || '', branch: b.branch || '',
+    startDate: start, managerName: b.managerName || '', managerUser: b.managerUser || '',
+    mentorName: b.mentorName || '', mentorUser: b.mentorUser || '',
+    contractType: b.contractType || '', shift: b.shift || '', workplace: b.workplace || '', note: b.note || '',
+    status: 'onboarding', employeeConfirmedAt: null, createdBy: req.user.username,
+    checklist: ob.buildChecklist(b.position, start),
+    evaluations: ob.buildEvaluations(start),
+    createdAt: Date.now()
+  };
+  const saved = await store.saveOnboarding(rec);
+  // mục 5: thông báo cho quản lý chi nhánh / trưởng bộ phận / người hướng dẫn
+  const due = ob.buildChecklist(b.position, start).slice(0, 6).map(c => '• ' + c.title).join('\n');
+  await notify({
+    type: 'new_employee', title: '👋 Nhân viên mới: ' + fullName,
+    body: 'Vị trí ' + (ob.POS_LABEL[b.position] || b.position) + ' · ' + (rec.branch || '') + ' · nhận việc ' + new Date(start).toLocaleDateString('vi-VN') + '.\nViệc cần chuẩn bị trước:\n' + due,
+    onboardingId: rec.id, roles: ['branch_manager', 'dept_head', 'mentor'],
+    branch: rec.branch, department: rec.department, mentorUser: rec.mentorUser
+  });
+  res.json(saved);
+});
+
+/* ---- cập nhật thông tin (HR/Admin) ---- */
+app.put('/api/onboarding/:id', authREST, authOB, requireOBEdit, async (req, res) => {
+  const r = await store.getOnboarding(req.params.id);
+  if (!r) return res.status(404).json({ error: 'Không tìm thấy' });
+  const b = req.body || {};
+  ['fullName', 'phone', 'email', 'position', 'department', 'branch', 'managerName', 'managerUser', 'mentorName', 'mentorUser', 'contractType', 'shift', 'workplace', 'note'].forEach(k => { if (b[k] !== undefined) r[k] = b[k]; });
+  if (b.startDate !== undefined) { const s = typeof b.startDate === 'number' ? b.startDate : Date.parse(b.startDate); if (!isNaN(s)) r.startDate = s; }
+  res.json(await store.saveOnboarding(r));
+});
+
+/* ---- tick checklist ---- */
+app.patch('/api/onboarding/:id/checklist/:itemId', authREST, authOB, async (req, res) => {
+  const r = await store.getOnboarding(req.params.id);
+  if (!r) return res.status(404).json({ error: 'Không tìm thấy' });
+  if (!ob.canSeeRecord(req.user, r)) return res.status(403).json({ error: 'Không có quyền' });
+  const it = (r.checklist || []).find(c => c.id === req.params.itemId);
+  if (!it) return res.status(404).json({ error: 'Không tìm thấy mục' });
+  it.done = !!(req.body && req.body.done);
+  it.doneAt = it.done ? Date.now() : null;
+  it.doneBy = it.done ? (req.user.name || req.user.username) : null;
+  r.status = ob.deriveStatus(r);
+  await store.saveOnboarding(r);
+  res.json({ ok: true, item: it, status: r.status, statusLabel: ob.STATUS[r.status], progress: ob.checklistProgress(r) });
+});
+
+/* ---- đặt trạng thái thủ công: hoàn tất / nghỉ sớm (HR/Admin) ---- */
+app.post('/api/onboarding/:id/status', authREST, authOB, requireOBEdit, async (req, res) => {
+  const r = await store.getOnboarding(req.params.id);
+  if (!r) return res.status(404).json({ error: 'Không tìm thấy' });
+  const s = (req.body && req.body.status) || '';
+  if (!ob.STATUS[s]) return res.status(400).json({ error: 'Trạng thái không hợp lệ' });
+  r.status = s; r.statusManual = true;
+  if (s === 'nghi_som') r.leftAt = Date.now();
+  await store.saveOnboarding(r);
+  res.json({ ok: true, status: s, statusLabel: ob.STATUS[s] });
+});
+
+app.delete('/api/onboarding/:id', authREST, authOB, requireOBEdit, async (req, res) => {
+  const ok = await store.deleteOnboarding(req.params.id); res.status(ok ? 200 : 404).json({ ok });
+});
+
+/* ---- đánh giá thử việc (+ AI tóm tắt) ---- */
+app.post('/api/onboarding/:id/eval/:evalId', authREST, authOB, async (req, res) => {
+  const r = await store.getOnboarding(req.params.id);
+  if (!r) return res.status(404).json({ error: 'Không tìm thấy' });
+  if (!ob.canSeeRecord(req.user, r)) return res.status(403).json({ error: 'Không có quyền' });
+  if (req.user.obRole === 'bod') return res.status(403).json({ error: 'BOD chỉ xem' });
+  const ev = (r.evaluations || []).find(e => e.id === req.params.evalId);
+  if (!ev) return res.status(404).json({ error: 'Không tìm thấy mốc đánh giá' });
+  const b = req.body || {};
+  ['attitude', 'skill', 'discipline', 'learning'].forEach(k => { if (b[k] != null && b[k] !== '') ev[k] = Math.max(0, Math.min(10, Number(b[k]) || 0)); });
+  ev.comment = String(b.comment || '');
+  ev.recommendation = b.recommendation || ev.recommendation || '';
+  ev.status = 'done'; ev.evaluatedBy = req.user.name || req.user.username; ev.evaluatedAt = Date.now();
+  try {
+    if (gemini.hasKey()) {
+      const prompt = 'Bạn là chuyên gia nhân sự F&B. Tóm tắt NGẮN GỌN (3-4 câu, tiếng Việt) nhận xét thử việc dưới đây và nêu rõ đề xuất cuối (một trong: ĐẠT / CẦN TRAINING THÊM / GIA HẠN THỬ VIỆC / KHÔNG PHÙ HỢP).\n' +
+        'Nhân viên: ' + r.fullName + ' — vị trí ' + (ob.POS_LABEL[r.position] || r.position) + ', mốc ' + ev.label + '.\n' +
+        'Điểm (0-10): Thái độ ' + (ev.attitude ?? '?') + ', Kỹ năng ' + (ev.skill ?? '?') + ', Kỷ luật ' + (ev.discipline ?? '?') + ', Tốc độ học việc ' + (ev.learning ?? '?') + '.\n' +
+        'Nhận xét của quản lý: ' + (ev.comment || '(không có)');
+      const ai = await gemini.complete(prompt, { maxOutputTokens: 300 });
+      if (ai) ev.aiSummary = ai;
+    }
+  } catch (e) { console.error('[eval-ai]', e.message); }
+  r.status = ob.deriveStatus(r);
+  await store.saveOnboarding(r);
+  res.json(ev);
+});
+
+/* ---- dashboard (theo phân quyền) ---- */
+app.get('/api/onboarding/stats/dashboard', authREST, authOB, async (req, res) => {
+  const all = (await store.listOnboarding()).filter(r => ob.canSeeRecord(req.user, r));
+  const now = Date.now(); const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+  all.forEach(r => { r.status = ob.deriveStatus(r); });
+  const byStatus = {}; Object.keys(ob.STATUS).forEach(s => byStatus[s] = 0);
+  const byBranch = {}, byPosLeave = {};
+  let newThisMonth = 0, leftFirst7 = 0;
+  all.forEach(r => {
+    byStatus[r.status] = (byStatus[r.status] || 0) + 1;
+    if (r.createdAt >= monthStart.getTime()) newThisMonth++;
+    if (r.status === 'nghi_som' && r.leftAt && r.startDate && (r.leftAt - r.startDate) <= 7 * ob.DAY) leftFirst7++;
+    // chi nhánh chậm: có task quá hạn
+    const overdue = (r.checklist || []).some(c => !c.done && c.deadline < now);
+    if (r.branch) { byBranch[r.branch] = byBranch[r.branch] || { total: 0, slow: 0 }; byBranch[r.branch].total++; if (overdue) byBranch[r.branch].slow++; }
+    if (r.status === 'nghi_som' && r.position) { byPosLeave[r.position] = byPosLeave[r.position] || { left: 0, total: 0 }; byPosLeave[r.position].left++; }
+  });
+  all.forEach(r => { if (r.position) { byPosLeave[r.position] = byPosLeave[r.position] || { left: 0, total: 0 }; byPosLeave[r.position].total++; } });
+  const slowBranches = Object.keys(byBranch).map(b => ({ branch: b, slow: byBranch[b].slow, total: byBranch[b].total })).filter(x => x.slow > 0).sort((a, b) => b.slow - a.slow);
+  const leavePos = Object.keys(byPosLeave).map(p => ({ position: p, label: ob.POS_LABEL[p] || p, left: byPosLeave[p].left, total: byPosLeave[p].total, rate: byPosLeave[p].total ? Math.round(byPosLeave[p].left * 100 / byPosLeave[p].total) : 0 })).filter(x => x.left > 0).sort((a, b) => b.rate - a.rate);
+  res.json({
+    total: all.length, newThisMonth, leftFirst7,
+    onboarding: byStatus.onboarding + byStatus.da_training + byStatus.sap_danh_gia,
+    completed: byStatus.hoan_tat, missingDocs: byStatus.thieu_ho_so, byStatus, slowBranches, leavePos
+  });
+});
+
+/* ---- báo cáo AI (HR/Admin/BOD) ---- */
+async function generateReport(list) {
+  const now = Date.now();
+  const lines = [];
+  let overdueTasks = 0, missingDocs = 0, risky = [];
+  list.forEach(r => {
+    r.status = ob.deriveStatus(r);
+    (r.checklist || []).forEach(c => { if (!c.done && c.deadline < now) overdueTasks++; });
+    const miss = (r.checklist || []).filter(c => c.group === 'hoso' && !c.done).length;
+    if (miss) missingDocs += miss;
+    const lowEval = (r.evaluations || []).some(e => e.status === 'done' && ((e.attitude != null && e.attitude < 5) || (e.recommendation && /không phù hợp|gia hạn/i.test(e.recommendation))));
+    if (r.status === 'thieu_ho_so' || lowEval) risky.push(r.fullName + ' (' + (ob.POS_LABEL[r.position] || r.position) + ')');
+  });
+  const stat = 'Tổng NV đang onboarding: ' + list.filter(r => ['onboarding', 'da_training', 'sap_danh_gia', 'thieu_ho_so'].indexOf(r.status) > -1).length +
+    '; Hoàn tất: ' + list.filter(r => r.status === 'hoan_tat').length +
+    '; Nghỉ sớm: ' + list.filter(r => r.status === 'nghi_som').length +
+    '; Task quá hạn: ' + overdueTasks + '; Hồ sơ thiếu: ' + missingDocs +
+    '; NV rủi ro: ' + (risky.join(', ') || 'không').slice(0, 300);
+  if (gemini.hasKey()) {
+    try {
+      const ai = await gemini.complete('Bạn là trưởng phòng Nhân sự F&B. Viết báo cáo onboarding tuần NGẮN GỌN, có gạch đầu dòng, tiếng Việt, gồm: tình hình nhân sự mới, task quá hạn, hồ sơ còn thiếu, nhân viên có rủi ro nghỉ sớm, và 2-3 đề xuất cải thiện quy trình. Dữ liệu:\n' + stat, { maxOutputTokens: 600 });
+      if (ai) return ai;
+    } catch (e) { console.error('[report-ai]', e.message); }
+  }
+  return 'BÁO CÁO ONBOARDING TUẦN\n' + stat;
+}
+app.post('/api/onboarding/report', authREST, authOB, async (req, res) => {
+  if (!(ob.canEdit(req.user) || req.user.obRole === 'bod')) return res.status(403).json({ error: 'Không có quyền' });
+  const list = (await store.listOnboarding()).filter(r => ob.canSeeRecord(req.user, r));
+  const text = await generateReport(list);
+  res.json({ report: text, at: Date.now() });
+});
+
+/* ---- trang nhân viên mới (công khai bằng token) ---- */
+app.get('/api/onboarding/portal/:token', async (req, res) => {
+  const r = await store.getOnboardingByToken(req.params.token);
+  if (!r) return res.status(404).json({ error: 'Link không hợp lệ' });
+  res.json({
+    fullName: r.fullName, position: ob.POS_LABEL[r.position] || r.position,
+    startDate: r.startDate, workplace: r.workplace || r.branch, branch: r.branch,
+    shift: r.shift, contractType: r.contractType,
+    contactName: r.mentorName || r.managerName, contactPhone: r.phone ? '' : '',
+    mentorName: r.mentorName, managerName: r.managerName,
+    docs: (r.checklist || []).filter(c => c.group === 'hoso').map(c => c.title),
+    trainings: (r.checklist || []).filter(c => c.group === 'training').map(c => c.title),
+    confirmed: !!r.employeeConfirmedAt
+  });
+});
+app.post('/api/onboarding/portal/:token/confirm', async (req, res) => {
+  const r = await store.getOnboardingByToken(req.params.token);
+  if (!r) return res.status(404).json({ error: 'Link không hợp lệ' });
+  if (!r.employeeConfirmedAt) {
+    r.employeeConfirmedAt = Date.now();
+    await store.saveOnboarding(r);
+    await notify({ type: 'employee_confirmed', title: '✅ NV mới đã xác nhận', body: r.fullName + ' đã đọc & xác nhận thông tin onboarding.', onboardingId: r.id, roles: ['mentor', 'branch_manager', 'hr'], branch: r.branch, department: r.department, mentorUser: r.mentorUser });
+  }
+  res.json({ ok: true });
+});
+
+/* nhắc việc tự động (mục 4) — quét mỗi 30 phút */
+async function runReminders() {
+  try {
+    const list = await store.listOnboarding();
+    const now = Date.now(); const day = ob.DAY; const today = new Date().toISOString().slice(0, 10);
+    for (const r of list) {
+      const st = ob.deriveStatus(r);
+      if (st === 'hoan_tat' || st === 'nghi_som') continue;
+      for (const c of (r.checklist || [])) {
+        if (c.done) continue;
+        if (c.deadline < now) await notify({ type: 'task_overdue', title: '⏰ Công việc QUÁ HẠN', body: '[' + r.fullName + '] "' + c.title + '" đã quá hạn.', onboardingId: r.id, roles: ownerRoles(c.owner), branch: r.branch, department: r.department, mentorUser: r.mentorUser, dedupeKey: 'task_overdue:' + c.id + ':' + today });
+        else if (c.deadline - now <= day) await notify({ type: 'task_due', title: '🔔 Sắp đến hạn', body: '[' + r.fullName + '] "' + c.title + '" đến hạn trong 24h.', onboardingId: r.id, roles: ownerRoles(c.owner), branch: r.branch, department: r.department, mentorUser: r.mentorUser, dedupeKey: 'task_due:' + c.id + ':' + today });
+      }
+      const miss = (r.checklist || []).filter(c => c.group === 'hoso' && !c.done);
+      if (miss.length) await notify({ type: 'missing_docs', title: '📄 Thiếu hồ sơ', body: '[' + r.fullName + '] còn thiếu ' + miss.length + ' hồ sơ.', onboardingId: r.id, roles: ['hr'], dedupeKey: 'missing_docs:' + r.id + ':' + today });
+      for (const e of (r.evaluations || [])) {
+        if (e.status === 'done') continue;
+        if (e.dueDate - now <= day && e.dueDate - now > -3 * day) await notify({ type: 'eval_due', title: '📝 Đến hạn đánh giá thử việc', body: '[' + r.fullName + '] ' + e.label + ' đến hạn.', onboardingId: r.id, roles: ['branch_manager', 'dept_head', 'mentor', 'hr'], branch: r.branch, department: r.department, mentorUser: r.mentorUser, dedupeKey: 'eval_due:' + e.id + ':' + today });
+      }
+    }
+  } catch (e) { console.error('[reminders]', e.message); }
+}
+/* báo cáo tự động hằng tuần (mục 9) */
+function isoWeekKey(d) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7)); const w1 = new Date(t.getFullYear(), 0, 4); return t.getFullYear() + '-W' + (1 + Math.round(((t - w1) / 86400000 - 3 + ((w1.getDay() + 6) % 7)) / 7)); }
+async function runWeeklyReport() {
+  try {
+    const key = 'weekly_report:' + isoWeekKey(Date.now());
+    if (await store.notificationExists(key)) return;
+    const list = await store.listOnboarding();
+    if (!list.length) return;
+    const text = await generateReport(list);
+    await notify({ type: 'weekly_report', title: '📊 Báo cáo onboarding tuần', body: text, roles: ['bod'], dedupeKey: key });
+  } catch (e) { console.error('[weekly]', e.message); }
+}
+setTimeout(runReminders, 15000);
+setInterval(runReminders, 30 * 60 * 1000);
+setInterval(runWeeklyReport, 6 * 60 * 60 * 1000); // kiểm tra mỗi 6h, tự tạo 1 lần/tuần
 
 /* ---- posts ---- */
 app.get('/api/posts', async (req, res) => { res.json({ posts: await store.listPosts({ publishedOnly: true }) }); });
