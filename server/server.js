@@ -644,8 +644,14 @@ setInterval(runWeeklyReport, 6 * 60 * 60 * 1000); // kiểm tra mỗi 6h, tự t
    TÍCH HỢP 1OFFICE (bảng phê duyệt / đề xuất)
    ============================================================ */
 const OO_KEY = 'oneoffice_config';
-const OO_DEFAULT = { apiUrl: '', boardUrl: 'https://maycha.1office.vn/approval/board', tokenParam: 'access_token', token: '' };
+const OO_DEFAULT = {
+  apiUrl: '', boardUrl: 'https://maycha.1office.vn/approval/board', tokenParam: 'access_token', token: '',
+  // tự động làm mới token (đặt 1 lần — server tự lấy token mới khi hết hạn)
+  authUrl: '', authMethod: 'POST', authPayload: '', tokenPath: 'access_token', expiresPath: 'expires_in'
+};
 async function ooGetConfig() { return Object.assign({}, OO_DEFAULT, (await store.getSetting(OO_KEY)) || {}); }
+let ooTokenCache = { token: '', exp: 0 };
+function ooGetPath(obj, path) { if (!path) return undefined; return String(path).split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); }
 function ooPickArray(j) {
   if (Array.isArray(j)) return j;
   if (j && typeof j === 'object') {
@@ -656,37 +662,77 @@ function ooPickArray(j) {
   }
   return null;
 }
-// config: không trả token ra ngoài
+// Tự lấy/làm mới access_token từ thông tin đăng nhập (nếu cấu hình authUrl), có cache theo hạn.
+async function ooResolveToken(c) {
+  if (!c.authUrl) return c.token || '';
+  if (ooTokenCache.token && ooTokenCache.exp > Date.now() + 30000) return ooTokenCache.token;
+  let payload = {};
+  try { payload = c.authPayload ? JSON.parse(c.authPayload) : {}; } catch (e) { throw new Error('Thông tin đăng nhập (authPayload) không phải JSON hợp lệ'); }
+  const method = (c.authMethod || 'POST').toUpperCase();
+  let url = c.authUrl, opts = { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } };
+  if (method === 'GET') { const qs = new URLSearchParams(payload).toString(); url += (url.indexOf('?') > -1 ? '&' : '?') + qs; }
+  else opts.body = JSON.stringify(payload);
+  const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 15000);
+  try {
+    const r = await fetch(url, Object.assign({ signal: ctrl.signal }, opts));
+    const txt = await r.text(); let j = null; try { j = JSON.parse(txt); } catch (e) {}
+    if (!j) throw new Error('Endpoint đăng nhập không trả JSON: ' + txt.slice(0, 150));
+    const tok = ooGetPath(j, c.tokenPath || 'access_token');
+    if (!tok) throw new Error('Không tìm thấy token theo đường dẫn "' + (c.tokenPath || 'access_token') + '"');
+    const secs = Number(ooGetPath(j, c.expiresPath || 'expires_in')) || 43200; // mặc định 12h
+    ooTokenCache = { token: String(tok), exp: Date.now() + secs * 1000 };
+    return ooTokenCache.token;
+  } finally { clearTimeout(t); }
+}
+// config: KHÔNG trả token/credentials ra ngoài
 app.get('/api/oneoffice/config', authREST, requireAdmin, async (req, res) => {
   const c = await ooGetConfig();
-  res.json({ apiUrl: c.apiUrl, boardUrl: c.boardUrl, tokenParam: c.tokenParam, tokenSet: !!c.token });
+  res.json({
+    apiUrl: c.apiUrl, boardUrl: c.boardUrl, tokenParam: c.tokenParam, tokenSet: !!c.token,
+    authUrl: c.authUrl, authMethod: c.authMethod, tokenPath: c.tokenPath, expiresPath: c.expiresPath,
+    authConfigured: !!(c.authUrl && c.authPayload), mode: c.authUrl ? 'auto' : 'static'
+  });
 });
 app.put('/api/oneoffice/config', authREST, requireAdmin, async (req, res) => {
   const b = req.body || {}; const cur = await ooGetConfig();
+  const keep = (v, prev) => (v !== undefined ? String(v).trim() : prev);
   const next = {
-    apiUrl: b.apiUrl !== undefined ? String(b.apiUrl).trim() : cur.apiUrl,
-    boardUrl: b.boardUrl !== undefined ? String(b.boardUrl).trim() : cur.boardUrl,
+    apiUrl: keep(b.apiUrl, cur.apiUrl), boardUrl: keep(b.boardUrl, cur.boardUrl),
     tokenParam: b.tokenParam ? String(b.tokenParam).trim() : (cur.tokenParam || 'access_token'),
-    token: (b.token !== undefined && b.token !== '') ? String(b.token).trim() : cur.token
+    token: (b.token !== undefined && b.token !== '') ? String(b.token).trim() : cur.token,
+    authUrl: keep(b.authUrl, cur.authUrl), authMethod: keep(b.authMethod, cur.authMethod) || 'POST',
+    tokenPath: b.tokenPath ? String(b.tokenPath).trim() : (cur.tokenPath || 'access_token'),
+    expiresPath: b.expiresPath !== undefined ? String(b.expiresPath).trim() : cur.expiresPath,
+    // authPayload chứa mật khẩu: chỉ ghi đè khi gửi giá trị mới; gửi chuỗi rỗng "" để xoá
+    authPayload: (b.authPayload !== undefined) ? String(b.authPayload) : cur.authPayload
   };
-  if (b.token === '') next.token = ''; // cho phép xoá token
+  if (b.token === '') next.token = '';
   await store.setSetting(OO_KEY, next);
+  ooTokenCache = { token: '', exp: 0 }; // buộc lấy token mới lần sau
   res.json({ ok: true });
 });
-// proxy gọi API 1Office (token giữ ở server)
+// proxy gọi API 1Office (token/credentials giữ ở server)
 app.get('/api/oneoffice/approvals', authREST, requireAdmin, async (req, res) => {
   const c = await ooGetConfig();
   if (!c.apiUrl) return res.status(400).json({ error: 'Chưa cấu hình API URL của 1Office.' });
-  if (!c.token) return res.status(400).json({ error: 'Chưa cấu hình Access Token.' });
-  let url = c.apiUrl + (c.apiUrl.indexOf('?') > -1 ? '&' : '?') + encodeURIComponent(c.tokenParam || 'access_token') + '=' + encodeURIComponent(c.token);
+  let token;
+  try { token = await ooResolveToken(c); } catch (e) { return res.status(502).json({ error: 'Không lấy được token tự động: ' + e.message }); }
+  if (!token) return res.status(400).json({ error: 'Chưa cấu hình Access Token (hoặc đăng nhập tự động).' });
+  let url = c.apiUrl + (c.apiUrl.indexOf('?') > -1 ? '&' : '?') + encodeURIComponent(c.tokenParam || 'access_token') + '=' + encodeURIComponent(token);
   const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 15000);
   try {
-    const r = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: ctrl.signal });
-    const text = await r.text();
-    let j = null; try { j = JSON.parse(text); } catch (e) {}
-    if (!j) return res.status(502).json({ error: 'API 1Office không trả JSON (có thể token sai hoặc URL chưa đúng endpoint API).', status: r.status, preview: text.slice(0, 300) });
+    let r = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: ctrl.signal });
+    let text = await r.text(); let j = null; try { j = JSON.parse(text); } catch (e) {}
+    // nếu token cache hết hạn (401/403) thì làm mới 1 lần rồi thử lại
+    if (c.authUrl && (r.status === 401 || r.status === 403)) {
+      ooTokenCache = { token: '', exp: 0 };
+      const tk2 = await ooResolveToken(c);
+      url = c.apiUrl + (c.apiUrl.indexOf('?') > -1 ? '&' : '?') + encodeURIComponent(c.tokenParam || 'access_token') + '=' + encodeURIComponent(tk2);
+      r = await fetch(url, { headers: { 'Accept': 'application/json' } }); text = await r.text(); j = null; try { j = JSON.parse(text); } catch (e) {}
+    }
+    if (!j) return res.status(502).json({ error: 'API 1Office không trả JSON (token sai hoặc URL chưa đúng endpoint API).', status: r.status, preview: text.slice(0, 300) });
     const items = ooPickArray(j);
-    res.json({ ok: true, status: r.status, count: items ? items.length : 0, items: items || [], raw: items ? undefined : j });
+    res.json({ ok: true, status: r.status, mode: c.authUrl ? 'auto' : 'static', count: items ? items.length : 0, items: items || [], raw: items ? undefined : j });
   } catch (e) {
     res.status(502).json({ error: 'Không gọi được API 1Office: ' + e.message });
   } finally { clearTimeout(t); }

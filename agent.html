@@ -422,6 +422,19 @@
               <label class="text-sm">Tên tham số token<input id="oo-tokenparam" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="access_token" /></label>
               <label class="text-sm sm:col-span-2">Link mở bảng 1Office (nút ↗)<input id="oo-boardurl" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="https://maycha.1office.vn/approval/board" /></label>
             </div>
+
+            <div class="mt-4 pt-3 border-t border-ink/10">
+              <div class="font-600 text-sm mb-1">🔄 Tự động làm mới token <span id="oo-mode" class="text-xs font-400 text-ink-soft"></span></div>
+              <p class="text-xs text-ink-soft mb-2">Khuyên dùng nếu token 1Office hết hạn theo ngày. Cấu hình <b>1 lần</b> — máy chủ tự đăng nhập lấy token mới khi cần, người dùng <b>không phải làm gì thêm</b>. (Để trống mục này nếu token của bạn là token vĩnh viễn.)</p>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <label class="text-sm sm:col-span-2">Endpoint đăng nhập / lấy token<input id="oo-authurl" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="https://maycha.1office.vn/api/auth/login" /></label>
+                <label class="text-sm">Phương thức<select id="oo-authmethod" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 text-sm"><option>POST</option><option>GET</option></select></label>
+                <label class="text-sm">Đường dẫn token trong phản hồi<input id="oo-tokenpath" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="data.access_token" /></label>
+                <label class="text-sm sm:col-span-2">Thông tin đăng nhập (JSON)<textarea id="oo-authpayload" rows="3" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm font-mono" placeholder='{"email":"api@maycha.vn","password":"••••••"}  — để trống = giữ nguyên'></textarea></label>
+                <label class="text-sm">Đường dẫn thời hạn (giây)<input id="oo-expirespath" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="expires_in" /></label>
+              </div>
+            </div>
+
             <div class="flex items-center gap-3 mt-3">
               <button id="oo-save" class="rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 hover:bg-crimson-deep">Lưu cấu hình</button>
               <span id="oo-cfg-msg" class="text-sm"></span>
@@ -581,9 +594,13 @@
       try {
         var c = await (await fetch('/api/oneoffice/config', { headers: authHeaders() })).json();
         $('oo-apiurl').value = c.apiUrl || ''; $('oo-tokenparam').value = c.tokenParam || 'access_token'; $('oo-boardurl').value = c.boardUrl || '';
+        $('oo-authurl').value = c.authUrl || ''; $('oo-authmethod').value = c.authMethod || 'POST'; $('oo-tokenpath').value = c.tokenPath || ''; $('oo-expirespath').value = c.expiresPath || '';
+        $('oo-authpayload').placeholder = c.authConfigured ? '•••••• (đã lưu — để trống = giữ nguyên)' : '{"email":"...","password":"..."}';
+        $('oo-mode').textContent = c.mode === 'auto' ? '· đang BẬT (tự lấy token)' : '· đang TẮT (token tĩnh)';
         if (c.boardUrl) $('oo-open').href = c.boardUrl;
         $('oo-token').placeholder = c.tokenSet ? '•••••• (đã lưu — để trống = giữ nguyên)' : 'dán Access Token';
-        if (!c.apiUrl || !c.tokenSet) { $('oo-cfg-wrap').open = true; $('oo-msg').textContent = 'Hãy cấu hình API URL + Access Token rồi bấm “Tải dữ liệu”.'; $('oo-msg').className = 'text-sm mb-3 text-amber-600'; }
+        var ready = c.apiUrl && (c.tokenSet || c.authConfigured);
+        if (!ready) { $('oo-cfg-wrap').open = true; $('oo-msg').textContent = 'Hãy cấu hình API URL + Access Token (hoặc bật tự động làm mới token) rồi bấm “Tải dữ liệu”.'; $('oo-msg').className = 'text-sm mb-3 text-amber-600'; }
         else { $('oo-msg').textContent = ''; }
       } catch (e) {}
     }
@@ -598,8 +615,9 @@
     }
     if ($('oo-save')) $('oo-save').onclick = async function () {
       var msg = $('oo-cfg-msg'); msg.textContent = 'Đang lưu…'; msg.className = 'text-sm text-ink-soft';
-      var body = { apiUrl: $('oo-apiurl').value, tokenParam: $('oo-tokenparam').value, boardUrl: $('oo-boardurl').value };
+      var body = { apiUrl: $('oo-apiurl').value, tokenParam: $('oo-tokenparam').value, boardUrl: $('oo-boardurl').value, authUrl: $('oo-authurl').value, authMethod: $('oo-authmethod').value, tokenPath: $('oo-tokenpath').value, expiresPath: $('oo-expirespath').value };
       if ($('oo-token').value) body.token = $('oo-token').value;
+      if ($('oo-authpayload').value) body.authPayload = $('oo-authpayload').value;
       try { var r = await fetch('/api/oneoffice/config', { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) }); if (!r.ok) throw new Error('Lỗi lưu'); msg.textContent = '✓ Đã lưu'; msg.className = 'text-sm text-emerald-600'; $('oo-token').value = ''; loadOneoffice(); }
       catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm text-crimson'; }
     };
