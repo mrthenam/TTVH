@@ -18,6 +18,7 @@ const recruit = require('./lib/jobdata');
 const geocode = require('./lib/geocode');
 const ob = require('./lib/onboarding');
 const crypto = require('crypto');
+const Excel = require('exceljs');
 
 let jobData = null;                 // dữ liệu tuyển dụng (nạp lúc khởi động / sau khi upload)
 const recruitStates = new Map();    // cid -> trạng thái luồng tuyển dụng
@@ -353,35 +354,97 @@ app.get('/api/onboarding/:id', authREST, authOB, async (req, res) => {
   res.json(Object.assign({}, r, { positionLabel: ob.POS_LABEL[r.position] || r.position, statusLabel: ob.STATUS[r.status], progress: ob.checklistProgress(r), portalUrl: '/onboarding-nv.html?token=' + r.token }));
 });
 
-/* ---- tạo onboarding (HR/Admin) ---- */
-app.post('/api/onboarding', authREST, authOB, requireOBEdit, async (req, res) => {
-  const b = req.body || {};
-  const fullName = String(b.fullName || '').trim();
-  if (!fullName) return res.status(400).json({ error: 'Thiếu họ tên' });
+/* tạo record onboarding từ object (dùng chung cho form & import Excel) */
+function buildOBRecord(b, createdBy) {
   let start = b.startDate ? (typeof b.startDate === 'number' ? b.startDate : Date.parse(b.startDate)) : Date.now();
   if (isNaN(start)) start = Date.now();
-  const rec = {
+  const position = (b.position && ob.POS_LABEL[b.position]) ? b.position : ob.positionKeyFromText(b.position);
+  return {
     id: ob.uid('ob'), token: crypto.randomBytes(12).toString('hex'),
-    fullName, phone: b.phone || '', email: b.email || '',
-    position: b.position || '', department: b.department || '', branch: b.branch || '',
+    fullName: String(b.fullName || '').trim(), phone: b.phone || '', email: b.email || '',
+    position, department: b.department || '', branch: b.branch || '',
     startDate: start, managerName: b.managerName || '', managerUser: b.managerUser || '',
     mentorName: b.mentorName || '', mentorUser: b.mentorUser || '',
     contractType: b.contractType || '', shift: b.shift || '', workplace: b.workplace || '', note: b.note || '',
-    status: 'onboarding', employeeConfirmedAt: null, createdBy: req.user.username,
-    checklist: ob.buildChecklist(b.position, start),
+    status: 'onboarding', employeeConfirmedAt: null, createdBy: createdBy || '',
+    checklist: ob.buildChecklist(position, start),
     evaluations: ob.buildEvaluations(start),
     createdAt: Date.now()
   };
-  const saved = await store.saveOnboarding(rec);
-  // mục 5: thông báo cho quản lý chi nhánh / trưởng bộ phận / người hướng dẫn
-  const due = ob.buildChecklist(b.position, start).slice(0, 6).map(c => '• ' + c.title).join('\n');
+}
+async function notifyNewEmployee(rec) {
+  const due = (rec.checklist || []).slice(0, 6).map(c => '• ' + c.title).join('\n');
   await notify({
-    type: 'new_employee', title: '👋 Nhân viên mới: ' + fullName,
-    body: 'Vị trí ' + (ob.POS_LABEL[b.position] || b.position) + ' · ' + (rec.branch || '') + ' · nhận việc ' + new Date(start).toLocaleDateString('vi-VN') + '.\nViệc cần chuẩn bị trước:\n' + due,
+    type: 'new_employee', title: '👋 Nhân viên mới: ' + rec.fullName,
+    body: 'Vị trí ' + (ob.POS_LABEL[rec.position] || rec.position || '?') + ' · ' + (rec.branch || '') + ' · nhận việc ' + new Date(rec.startDate).toLocaleDateString('vi-VN') + '.\nViệc cần chuẩn bị trước:\n' + due,
     onboardingId: rec.id, roles: ['branch_manager', 'dept_head', 'mentor'],
     branch: rec.branch, department: rec.department, mentorUser: rec.mentorUser
   });
+}
+
+/* ---- tạo onboarding (HR/Admin) ---- */
+app.post('/api/onboarding', authREST, authOB, requireOBEdit, async (req, res) => {
+  const b = req.body || {};
+  if (!String(b.fullName || '').trim()) return res.status(400).json({ error: 'Thiếu họ tên' });
+  const rec = buildOBRecord(b, req.user.username);
+  const saved = await store.saveOnboarding(rec);
+  await notifyNewEmployee(rec);
   res.json(saved);
+});
+
+/* ---- import nhiều NV từ Excel (HR/Admin) ---- */
+function obCellStr(v) {
+  if (v == null) return '';
+  if (v instanceof Date) return v.getTime();
+  if (typeof v === 'object') return String(v.richText ? v.richText.map(t => t.text).join('') : (v.text != null ? v.text : (v.result != null ? v.result : '')));
+  return String(v).trim();
+}
+function obNormLabel(s) { return String(obCellStr(s)).toLowerCase().replace(/\s+/g, ' ').trim(); }
+app.post('/api/onboarding/import', authREST, authOB, requireOBEdit, async (req, res) => {
+  try {
+    const m = /^data:[^;]*;base64,(.+)$/.exec((req.body && req.body.dataUrl) || '');
+    if (!m) return res.status(400).json({ error: 'File không hợp lệ' });
+    const wb = new Excel.Workbook(); await wb.xlsx.load(Buffer.from(m[1], 'base64'));
+    const ws = wb.worksheets[0]; if (!ws) return res.status(400).json({ error: 'File rỗng' });
+    const rows = ws.getSheetValues();
+    let hdr = -1; for (let r = 1; r < rows.length; r++) { if (rows[r] && rows[r].some(c => c != null && obCellStr(c) !== '')) { hdr = r; break; } }
+    if (hdr < 0) return res.status(400).json({ error: 'File không có dữ liệu' });
+    const colOf = {};
+    ob.IMPORT_COLUMNS.forEach(([field, label]) => {
+      for (let c = 1; c < rows[hdr].length; c++) { if (obNormLabel(rows[hdr][c]) === obNormLabel(label)) { colOf[field] = c; break; } }
+    });
+    let created = 0; const errors = [];
+    for (let r = hdr + 1; r < rows.length; r++) {
+      const rv = rows[r]; if (!rv || !rv.some(c => c != null && obCellStr(c) !== '')) continue;
+      const b = {};
+      ob.IMPORT_COLUMNS.forEach(([field], i) => { const c = colOf[field] != null ? colOf[field] : (i + 1); b[field] = obCellStr(rv[c]); });
+      if (!String(b.fullName || '').trim()) continue;
+      try { const rec = buildOBRecord(b, req.user.username); await store.saveOnboarding(rec); await notifyNewEmployee(rec); created++; }
+      catch (e) { errors.push('Dòng ' + r + ': ' + e.message); }
+    }
+    res.json({ ok: true, created, errors });
+  } catch (e) { console.error('[ob-import]', e); res.status(500).json({ error: 'Lỗi đọc file: ' + e.message }); }
+});
+
+/* ---- export danh sách ra Excel (theo phân quyền) — path 2 đoạn để không đụng /:id ---- */
+app.get('/api/onboarding/export/xlsx', authREST, authOB, async (req, res) => {
+  try {
+    const list = (await store.listOnboarding()).filter(r => ob.canSeeRecord(req.user, r));
+    const wb = new Excel.Workbook(); const ws = wb.addWorksheet('Onboarding');
+    ws.addRow(ob.IMPORT_COLUMNS.map(c => c[1]).concat(['Trạng thái', 'Tiến độ %']));
+    ws.getRow(1).font = { bold: true };
+    list.forEach(r => {
+      r.status = ob.deriveStatus(r); const p = ob.checklistProgress(r);
+      ws.addRow([r.fullName, r.phone, r.email, ob.POS_LABEL[r.position] || r.position, r.department, r.branch,
+        r.startDate ? new Date(r.startDate).toISOString().slice(0, 10) : '', r.managerName, r.managerUser,
+        r.mentorName, r.mentorUser, r.contractType, r.shift, r.workplace, r.note, ob.STATUS[r.status], p.pct]);
+    });
+    ws.columns.forEach(c => { c.width = 18; });
+    const buf = await wb.xlsx.writeBuffer();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="onboarding-export.xlsx"');
+    res.send(Buffer.from(buf));
+  } catch (e) { res.status(500).json({ error: 'Lỗi xuất file: ' + e.message }); }
 });
 
 /* ---- cập nhật thông tin (HR/Admin) ---- */

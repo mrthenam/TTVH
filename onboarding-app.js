@@ -36,7 +36,7 @@ async function boot() {
     META = await r.json(); ME = META.me; CAN_EDIT = META.canEdit;
     showApp();
     $('me-info').innerHTML = esc(ME.name) + '<br><span class="text-cream/50">' + esc(ROLE_LABEL[ME.obRole] || ME.obRole) + (ME.branch ? ' · ' + esc(ME.branch) : '') + (ME.department ? ' · ' + esc(ME.department) : '') + '</span>';
-    if (CAN_EDIT) $('btn-new').classList.remove('hidden');
+    if (CAN_EDIT) { $('btn-new').classList.remove('hidden'); $('btn-import').classList.remove('hidden'); $('btn-sample').classList.remove('hidden'); }
     // fill position select
     $('f-position').innerHTML = META.positions.map(function (p) { return '<option value="' + p.key + '">' + esc(p.label) + '</option>'; }).join('');
     go('dashboard'); loadNotifs(); setInterval(loadNotifs, 60000);
@@ -223,6 +223,32 @@ $('ob-form').addEventListener('submit', async function (e) {
     closeForm(); go('list');
     if (!id) setTimeout(function () { openDetail(j.id); }, 200);
   } catch (e) { $('f-msg').textContent = '✗ ' + e.message; $('f-msg').className = 'text-sm self-center text-crimson'; }
+});
+
+/* ---------- import / export ---------- */
+$('btn-export').onclick = async function () {
+  var msg = $('io-msg'); msg.textContent = 'Đang xuất Excel…'; msg.className = 'text-sm mb-3 text-ink-soft';
+  try {
+    var r = await fetch('/api/onboarding/export/xlsx', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) throw new Error('Lỗi export');
+    var blob = await r.blob(); var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'onboarding-export.xlsx'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    msg.textContent = '✓ Đã tải file export'; msg.className = 'text-sm mb-3 text-emerald-600';
+  } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm mb-3 text-crimson'; }
+};
+$('import-file').addEventListener('change', function () {
+  var f = this.files && this.files[0]; if (!f) return; var input = this; var msg = $('io-msg');
+  msg.textContent = 'Đang nhập "' + f.name + '"…'; msg.className = 'text-sm mb-3 text-ink-soft';
+  var rd = new FileReader();
+  rd.onload = async function () {
+    try {
+      var r = await fetch('/api/onboarding/import', { method: 'POST', headers: H(), body: JSON.stringify({ dataUrl: rd.result }) });
+      var j = await r.json(); if (!r.ok) throw new Error(j.error || 'Lỗi import');
+      msg.textContent = '✓ Đã import ' + j.created + ' nhân viên' + (j.errors && j.errors.length ? (' · ' + j.errors.length + ' dòng lỗi: ' + j.errors.slice(0, 3).join('; ')) : '');
+      msg.className = 'text-sm mb-3 ' + (j.created ? 'text-emerald-600' : 'text-amber-600'); input.value = ''; loadList();
+    } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm mb-3 text-crimson'; }
+  };
+  rd.readAsDataURL(f);
 });
 
 /* ---------- notifications ---------- */

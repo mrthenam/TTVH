@@ -147,8 +147,37 @@ function canSeeRecord(user, rec) {
   return false;
 }
 
+/* ---------- import/export ---------- */
+// [field, nhãn cột] — đúng thứ tự cột trong file Excel
+const IMPORT_COLUMNS = [
+  ['fullName', 'Họ tên'],
+  ['phone', 'Số điện thoại'],
+  ['email', 'Email'],
+  ['position', 'Vị trí'],
+  ['department', 'Phòng ban'],
+  ['branch', 'Chi nhánh'],
+  ['startDate', 'Ngày bắt đầu (YYYY-MM-DD)'],
+  ['managerName', 'Quản lý trực tiếp'],
+  ['managerUser', 'Tài khoản quản lý'],
+  ['mentorName', 'Người hướng dẫn'],
+  ['mentorUser', 'Tài khoản người hướng dẫn'],
+  ['contractType', 'Loại hợp đồng'],
+  ['shift', 'Ca làm'],
+  ['workplace', 'Địa điểm làm việc'],
+  ['note', 'Ghi chú']
+];
+function _norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, ' ').trim(); }
+// nhận cả key ("pha_che") lẫn nhãn tiếng Việt ("Pha chế")
+function positionKeyFromText(text) {
+  const n = _norm(text);
+  if (!n) return '';
+  for (const p of POSITIONS) { if (_norm(p.key) === n || _norm(p.label) === n) return p.key; }
+  for (const p of POSITIONS) { if (n.indexOf(_norm(p.label)) > -1 || n.indexOf(_norm(p.key)) > -1) return p.key; }
+  return '';
+}
+
 module.exports = {
-  DAY, POSITIONS, POS_LABEL, GROUPS, MILESTONES, STATUS,
+  DAY, POSITIONS, POS_LABEL, GROUPS, MILESTONES, STATUS, IMPORT_COLUMNS,
   uid, buildChecklist, buildEvaluations, deriveStatus, checklistProgress,
-  canSeeAll, canEdit, canSeeRecord
+  canSeeAll, canEdit, canSeeRecord, positionKeyFromText
 };

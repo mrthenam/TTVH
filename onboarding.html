@@ -87,10 +87,14 @@
 
         <!-- LIST -->
         <section data-panel="list" class="hidden">
-          <div class="flex items-center gap-3 mb-4">
+          <div class="flex flex-wrap items-center gap-2 mb-4">
             <input id="ob-search" class="inp max-w-xs" placeholder="🔎 Tìm tên / vị trí…" />
-            <button id="btn-new" class="ml-auto rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 hover:bg-crimson-deep hidden">+ Tạo nhân viên mới</button>
+            <a id="btn-sample" href="Onboarding-mau.xlsx" download class="ml-auto rounded-full bg-ink/10 px-3 py-2 text-sm font-600 hover:bg-ink/20 hidden">⬇ File mẫu</a>
+            <button id="btn-export" class="rounded-full bg-ink/10 px-3 py-2 text-sm font-600 hover:bg-ink/20">⬆ Export Excel</button>
+            <label id="btn-import" class="rounded-full bg-gold-deep text-cream px-3 py-2 text-sm font-600 hover:opacity-90 cursor-pointer hidden">⬇ Import Excel<input id="import-file" type="file" accept=".xlsx,.xls" class="hidden" /></label>
+            <button id="btn-new" class="rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 hover:bg-crimson-deep hidden">+ Tạo nhân viên mới</button>
           </div>
+          <p id="io-msg" class="text-sm mb-3"></p>
           <div class="bg-paper rounded-2xl ring-1 ring-ink/10 overflow-hidden">
             <div class="overflow-auto max-h-[70vh]">
               <table class="w-full text-sm">
