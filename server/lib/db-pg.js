@@ -33,6 +33,10 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at BIGINT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_notif_dedupe ON notifications(dedupe_key);
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  val JSONB
+);
 CREATE TABLE IF NOT EXISTS conversations (
   cid TEXT PRIMARY KEY,
   mode TEXT NOT NULL DEFAULT 'auto',
@@ -274,6 +278,10 @@ async function markNotificationRead(id) {
 }
 async function notificationExists(dedupeKey) { return Number((await pool.query('SELECT COUNT(*)::int AS n FROM notifications WHERE dedupe_key=$1', [dedupeKey])).rows[0].n) > 0; }
 
+/* ---------- settings (KV) ---------- */
+async function getSetting(key) { const r = (await pool.query('SELECT val FROM app_settings WHERE key=$1', [key])).rows[0]; return r ? r.val : null; }
+async function setSetting(key, val) { await pool.query('INSERT INTO app_settings (key, val) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET val=EXCLUDED.val', [key, val]); return true; }
+
 /* ---------- carousel ---------- */
 async function getCarousel() {
   return (await pool.query('SELECT id, src, caption FROM carousel ORDER BY position ASC')).rows
@@ -395,6 +403,7 @@ module.exports = {
   getAgentByUsername, createAgent, updateAgentProfile, updatePassword, deleteAgent, listAgents, countAgents,
   listOnboarding, getOnboarding, getOnboardingByToken, saveOnboarding, deleteOnboarding,
   listNotifications, createNotification, markNotificationRead, notificationExists,
+  getSetting, setSetting,
   getCarousel, addCarouselItem, deleteCarouselItem, reorderCarousel,
   getGallery, addGalleryItem, deleteGalleryItem, reorderGallery,
   getJobData, setJobData,

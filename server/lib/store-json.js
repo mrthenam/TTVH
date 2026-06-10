@@ -19,6 +19,7 @@ function loadSync() {
   data.jobposts = data.jobposts || [];
   data.onboarding = data.onboarding || [];
   data.notifications = data.notifications || [];
+  data.settings = data.settings || {};
 }
 
 let timer = null;
@@ -123,6 +124,10 @@ async function listNotifications() { return data.notifications.map(n => Object.a
 async function createNotification(n) { n.createdAt = n.createdAt || Date.now(); data.notifications.unshift(n); if (data.notifications.length > 1000) data.notifications = data.notifications.slice(0, 1000); persist(); return n; }
 async function markNotificationRead(id) { const n = data.notifications.find(x => x.id === id); if (n) { n.read = true; persist(); } return !!n; }
 async function notificationExists(dedupeKey) { return data.notifications.some(n => n.dedupeKey === dedupeKey); }
+
+/* ---------- settings (KV) ---------- */
+async function getSetting(key) { return data.settings[key] !== undefined ? data.settings[key] : null; }
+async function setSetting(key, val) { data.settings[key] = val; persist(); return true; }
 async function countAgents() { return Object.keys(data.agents).length; }
 
 /* ---------- carousel ---------- */
@@ -193,6 +198,7 @@ module.exports = {
   getAgentByUsername, createAgent, updateAgentProfile, updatePassword, deleteAgent, listAgents, countAgents,
   listOnboarding, getOnboarding, getOnboardingByToken, saveOnboarding, deleteOnboarding,
   listNotifications, createNotification, markNotificationRead, notificationExists,
+  getSetting, setSetting,
   getCarousel, addCarouselItem, deleteCarouselItem, reorderCarousel,
   getGallery, addGalleryItem, deleteGalleryItem, reorderGallery,
   getJobData, setJobData,

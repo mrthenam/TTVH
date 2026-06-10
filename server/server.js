@@ -640,6 +640,58 @@ setTimeout(runReminders, 15000);
 setInterval(runReminders, 30 * 60 * 1000);
 setInterval(runWeeklyReport, 6 * 60 * 60 * 1000); // kiểm tra mỗi 6h, tự tạo 1 lần/tuần
 
+/* ============================================================
+   TÍCH HỢP 1OFFICE (bảng phê duyệt / đề xuất)
+   ============================================================ */
+const OO_KEY = 'oneoffice_config';
+const OO_DEFAULT = { apiUrl: '', boardUrl: 'https://maycha.1office.vn/approval/board', tokenParam: 'access_token', token: '' };
+async function ooGetConfig() { return Object.assign({}, OO_DEFAULT, (await store.getSetting(OO_KEY)) || {}); }
+function ooPickArray(j) {
+  if (Array.isArray(j)) return j;
+  if (j && typeof j === 'object') {
+    for (const k of ['data', 'items', 'results', 'rows', 'records', 'list', 'approvals', 'proposals']) {
+      if (Array.isArray(j[k])) return j[k];
+      if (j[k] && typeof j[k] === 'object') { for (const k2 of ['data', 'rows', 'items', 'list']) if (Array.isArray(j[k][k2])) return j[k][k2]; }
+    }
+  }
+  return null;
+}
+// config: không trả token ra ngoài
+app.get('/api/oneoffice/config', authREST, requireAdmin, async (req, res) => {
+  const c = await ooGetConfig();
+  res.json({ apiUrl: c.apiUrl, boardUrl: c.boardUrl, tokenParam: c.tokenParam, tokenSet: !!c.token });
+});
+app.put('/api/oneoffice/config', authREST, requireAdmin, async (req, res) => {
+  const b = req.body || {}; const cur = await ooGetConfig();
+  const next = {
+    apiUrl: b.apiUrl !== undefined ? String(b.apiUrl).trim() : cur.apiUrl,
+    boardUrl: b.boardUrl !== undefined ? String(b.boardUrl).trim() : cur.boardUrl,
+    tokenParam: b.tokenParam ? String(b.tokenParam).trim() : (cur.tokenParam || 'access_token'),
+    token: (b.token !== undefined && b.token !== '') ? String(b.token).trim() : cur.token
+  };
+  if (b.token === '') next.token = ''; // cho phép xoá token
+  await store.setSetting(OO_KEY, next);
+  res.json({ ok: true });
+});
+// proxy gọi API 1Office (token giữ ở server)
+app.get('/api/oneoffice/approvals', authREST, requireAdmin, async (req, res) => {
+  const c = await ooGetConfig();
+  if (!c.apiUrl) return res.status(400).json({ error: 'Chưa cấu hình API URL của 1Office.' });
+  if (!c.token) return res.status(400).json({ error: 'Chưa cấu hình Access Token.' });
+  let url = c.apiUrl + (c.apiUrl.indexOf('?') > -1 ? '&' : '?') + encodeURIComponent(c.tokenParam || 'access_token') + '=' + encodeURIComponent(c.token);
+  const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 15000);
+  try {
+    const r = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: ctrl.signal });
+    const text = await r.text();
+    let j = null; try { j = JSON.parse(text); } catch (e) {}
+    if (!j) return res.status(502).json({ error: 'API 1Office không trả JSON (có thể token sai hoặc URL chưa đúng endpoint API).', status: r.status, preview: text.slice(0, 300) });
+    const items = ooPickArray(j);
+    res.json({ ok: true, status: r.status, count: items ? items.length : 0, items: items || [], raw: items ? undefined : j });
+  } catch (e) {
+    res.status(502).json({ error: 'Không gọi được API 1Office: ' + e.message });
+  } finally { clearTimeout(t); }
+});
+
 /* ---- posts ---- */
 app.get('/api/posts', async (req, res) => { res.json({ posts: await store.listPosts({ publishedOnly: true }) }); });
 app.get('/api/posts/all', authREST, async (req, res) => { res.json({ posts: await store.listPosts({}) }); });

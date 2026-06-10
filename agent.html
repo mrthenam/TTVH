@@ -104,6 +104,7 @@
         <button data-go="jobs" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🤖</span> Data tuyển dụng</button>
         <button data-go="staff" id="nav-staff" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">👥</span> Nhân viên</button>
         <a href="onboarding.html" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">🧑‍🎓</span> Onboarding NV</a>
+        <button data-go="oneoffice" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">📥</span> Phê duyệt 1Office</button>
         <button data-go="account" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-cream/10 transition-colors text-left"><span class="nav-ico">⚙️</span> Tài khoản</button>
       </nav>
       <div class="p-3 border-t border-cream/15 text-sm">
@@ -404,6 +405,33 @@
           </div>
         </section>
 
+        <!-- 1OFFICE -->
+        <section data-panel="oneoffice" class="h-full hidden overflow-y-auto p-6">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <h2 class="font-display text-xl font-700">Phê duyệt / Đề xuất từ 1Office</h2>
+            <a id="oo-open" href="https://maycha.1office.vn/approval/board" target="_blank" rel="noopener" class="ml-auto rounded-full bg-ink/10 px-4 py-2 text-sm font-600 hover:bg-ink/20">↗ Mở trên 1Office</a>
+            <button id="oo-load" class="rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 hover:bg-crimson-deep">⟳ Tải dữ liệu</button>
+          </div>
+
+          <details id="oo-cfg-wrap" class="mb-4 rounded-2xl bg-paper ring-1 ring-ink/10 p-4">
+            <summary class="cursor-pointer font-600">⚙️ Cấu hình kết nối 1Office (Admin)</summary>
+            <p class="text-sm text-ink-soft mt-2 mb-3">Lấy <b>Access Token</b> trong 1Office: <i>Cài đặt → API / Tích hợp</i>. Dán <b>API URL</b> của module phê duyệt/đề xuất (endpoint trả JSON) và token vào đây. Token được lưu an toàn ở máy chủ, không hiển thị lại.</p>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <label class="text-sm sm:col-span-2">API URL (endpoint JSON của 1Office)<input id="oo-apiurl" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="https://maycha.1office.vn/api/..." /></label>
+              <label class="text-sm">Access Token<input id="oo-token" type="password" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="dán token (để trống = giữ nguyên)" /></label>
+              <label class="text-sm">Tên tham số token<input id="oo-tokenparam" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="access_token" /></label>
+              <label class="text-sm sm:col-span-2">Link mở bảng 1Office (nút ↗)<input id="oo-boardurl" class="w-full mt-1 rounded-xl border border-ink/15 px-3 py-2.5 outline-none focus:border-crimson text-sm" placeholder="https://maycha.1office.vn/approval/board" /></label>
+            </div>
+            <div class="flex items-center gap-3 mt-3">
+              <button id="oo-save" class="rounded-full bg-crimson text-cream px-4 py-2 text-sm font-600 hover:bg-crimson-deep">Lưu cấu hình</button>
+              <span id="oo-cfg-msg" class="text-sm"></span>
+            </div>
+          </details>
+
+          <p id="oo-msg" class="text-sm mb-3"></p>
+          <div id="oo-result"></div>
+        </section>
+
         <!-- ACCOUNT -->
         <section data-panel="account" class="h-full hidden overflow-y-auto p-6">
           <div class="max-w-md rounded-2xl bg-paper ring-1 ring-ink/5 shadow-soft p-6">
@@ -518,6 +546,7 @@
       jobposts: 'Tin tuyển dụng',
       jobs: 'Dữ liệu chatbot tuyển dụng',
       staff: 'Nhân viên',
+      oneoffice: 'Phê duyệt 1Office',
       account: 'Tài khoản'
     };
 
@@ -537,6 +566,7 @@
       if (name === 'jobs') loadJobData();
       if (name === 'jobposts') loadJobPosts();
       if (name === 'staff') loadAgents();
+      if (name === 'oneoffice') loadOneoffice();
       if (name === 'overview') loadOverview();
     }
     document.querySelectorAll('.nav-btn').forEach(function(b) {
@@ -544,6 +574,44 @@
         go(b.getAttribute('data-go'));
       });
     });
+
+    /* ---------- 1Office (phê duyệt) ---------- */
+    async function loadOneoffice() {
+      if (meRole !== 'admin') { $('oo-result').innerHTML = '<p class="text-ink-soft">Chỉ quản trị viên (admin) mới dùng được mục này.</p>'; $('oo-cfg-wrap').style.display = 'none'; $('oo-load').style.display = 'none'; $('oo-msg').textContent = ''; return; }
+      try {
+        var c = await (await fetch('/api/oneoffice/config', { headers: authHeaders() })).json();
+        $('oo-apiurl').value = c.apiUrl || ''; $('oo-tokenparam').value = c.tokenParam || 'access_token'; $('oo-boardurl').value = c.boardUrl || '';
+        if (c.boardUrl) $('oo-open').href = c.boardUrl;
+        $('oo-token').placeholder = c.tokenSet ? '•••••• (đã lưu — để trống = giữ nguyên)' : 'dán Access Token';
+        if (!c.apiUrl || !c.tokenSet) { $('oo-cfg-wrap').open = true; $('oo-msg').textContent = 'Hãy cấu hình API URL + Access Token rồi bấm “Tải dữ liệu”.'; $('oo-msg').className = 'text-sm mb-3 text-amber-600'; }
+        else { $('oo-msg').textContent = ''; }
+      } catch (e) {}
+    }
+    function renderOO(j) {
+      if (j.items && j.items.length) {
+        var cols = []; j.items.forEach(function (it) { if (it && typeof it === 'object') Object.keys(it).forEach(function (k) { if (cols.indexOf(k) < 0 && cols.length < 12) cols.push(k); }); });
+        var head = '<tr>' + cols.map(function (c) { return '<th class="p-2 text-left">' + esc(c) + '</th>'; }).join('') + '</tr>';
+        var rows = j.items.slice(0, 200).map(function (it) { return '<tr class="border-t border-ink/5">' + cols.map(function (c) { var v = it[c]; if (v && typeof v === 'object') v = JSON.stringify(v); return '<td class="p-2 align-top">' + esc(String(v == null ? '' : v)).slice(0, 180) + '</td>'; }).join('') + '</tr>'; }).join('');
+        return '<div class="bg-paper rounded-2xl ring-1 ring-ink/10 overflow-auto max-h-[65vh]"><table class="w-full text-sm"><thead class="bg-sand text-xs text-ink-soft sticky top-0">' + head + '</thead><tbody>' + rows + '</tbody></table></div>';
+      }
+      return '<div class="bg-paper rounded-2xl ring-1 ring-ink/10 p-4"><p class="text-sm text-ink-soft mb-2">Không nhận diện được danh sách dạng bảng — dữ liệu thô trả về (gửi tôi cấu trúc này nếu cần hiển thị đẹp hơn):</p><pre class="text-xs overflow-auto max-h-96 bg-cream p-3 rounded-lg">' + esc(JSON.stringify(j.raw || j, null, 2)) + '</pre></div>';
+    }
+    if ($('oo-save')) $('oo-save').onclick = async function () {
+      var msg = $('oo-cfg-msg'); msg.textContent = 'Đang lưu…'; msg.className = 'text-sm text-ink-soft';
+      var body = { apiUrl: $('oo-apiurl').value, tokenParam: $('oo-tokenparam').value, boardUrl: $('oo-boardurl').value };
+      if ($('oo-token').value) body.token = $('oo-token').value;
+      try { var r = await fetch('/api/oneoffice/config', { method: 'PUT', headers: authHeaders(), body: JSON.stringify(body) }); if (!r.ok) throw new Error('Lỗi lưu'); msg.textContent = '✓ Đã lưu'; msg.className = 'text-sm text-emerald-600'; $('oo-token').value = ''; loadOneoffice(); }
+      catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm text-crimson'; }
+    };
+    if ($('oo-load')) $('oo-load').onclick = async function () {
+      var msg = $('oo-msg'); msg.textContent = 'Đang tải dữ liệu từ 1Office…'; msg.className = 'text-sm mb-3 text-ink-soft'; $('oo-result').innerHTML = '';
+      try {
+        var r = await fetch('/api/oneoffice/approvals', { headers: authHeaders() }); var j = await r.json();
+        if (!r.ok) throw new Error((j.error || 'Lỗi') + (j.preview ? (' · phản hồi: ' + j.preview) : ''));
+        msg.textContent = '✓ Tải xong: ' + j.count + ' mục'; msg.className = 'text-sm mb-3 text-emerald-600';
+        $('oo-result').innerHTML = renderOO(j);
+      } catch (e) { msg.textContent = '✗ ' + e.message; msg.className = 'text-sm mb-3 text-crimson'; }
+    };
 
     /* ---------- overview ---------- */
     async function loadOverview() {
