@@ -790,7 +790,7 @@ async function handleRecruit(cid, text) {
   if (!state) {
     if (!isRecruitIntent(text)) return null;
     recruitStates.set(cid, { step: 'ask_address' });
-    return 'Dạ Thịnh Thế Vinh Hoa (MAYCHA, Hồng Trà Sữa Tâm Hảo, Gà Giòn Ba Cô Gái) đang tuyển nhiều vị trí ạ! 🎉\n'
+    return 'Dạ Thịnh Thế Vinh Hoa (MAYCHA, Hồng Trà Sữa Tam Hảo, Gà Giòn Ba Cô Gái) đang tuyển nhiều vị trí ạ! 🎉\n'
       + 'Bạn cho mình xin **tên đường / khu vực bạn đang ở** để mình tìm cửa hàng đang tuyển gần bạn nhất nhé!\n'
       + '(vd: "Cao Thắng" hoặc "123 Lê Văn Sỹ, Quận 3") 📍';
   }
@@ -831,6 +831,12 @@ async function handleRecruit(cid, text) {
   return null;
 }
 
+/* Câu trả lời khi trợ lý không chắc chắn. Không nhắc tới engine/API/khoá —
+   khách chỉ cần một lối đi tiếp, không cần biết hạ tầng phía sau. */
+const FALLBACK_ANSWER =
+  'Câu này mình chưa có sẵn thông tin ạ. Bạn nhắn "gặp nhân viên" để được chuyên viên hỗ trợ trực tiếp, '
+  + 'hoặc gọi hotline 028 7108 0719 giúp mình nhé.';
+
 async function runBot(cid) {
   let conv = await store.getConv(cid);
   if (conv.mode !== 'auto') return;                       // (3) có nhân viên -> bot im
@@ -848,12 +854,10 @@ async function runBot(cid) {
       if (preset) { await delay(500 + Math.random() * 400); answer = preset; }
       else {                                                // (2)
         const g = await gemini.ask(conv.messages);
-        answer = (g === null)
-          ? 'Câu này mình chưa có sẵn câu trả lời 🤔 Bạn nhắn Zalo để được hỗ trợ trực tiếp nhé. (Máy chủ chưa cấu hình GEMINI_API_KEY.)'
-          : g;
+        answer = (g === null) ? FALLBACK_ANSWER : g;
       }
     }
-  } catch (err) { answer = 'Xin lỗi, trợ lý AI đang bận 🙏 Bạn vui lòng nhắn Zalo giúp mình nhé.'; console.error('[bot]', err.message); }
+  } catch (err) { answer = FALLBACK_ANSWER; console.error('[bot]', err.message); }
 
   conv = await store.getConv(cid);
   if (conv.mode !== 'auto') { sendCustomer(cid, { type: 'typing', who: 'bot', on: false }); return; }
