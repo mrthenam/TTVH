@@ -16,7 +16,7 @@ const POS_NAME = {
   CSS: 'Part-time kiêm Hoạt náo viên (CSS)',
   SECD: 'Part-time ca đêm (SECD)'
 };
-const BRAND_NAME = { MC: 'MAYCHA', TH: 'Hồng Trà Sữa Tam Hảo', GA: 'Gà Giòn Sốt Ba Cô Gái' };
+const BRAND_NAME = { MC: 'MAYCHA', TH: 'Hồng Trà Sữa Tâm Hảo', GA: 'Gà Giòn Sốt Ba Cô Gái' };
 
 /* từ khoá -> mã vị trí (kiểm tra theo thứ tự, cụ thể trước) */
 const POS_KEYWORDS = [
